@@ -14,7 +14,6 @@ import ru.practicum.event.hub.device.DeviceRemovedEvent;
 import ru.practicum.event.hub.enums.HubEventType;
 import ru.practicum.event.hub.scenarion.ScenarioAddedEvent;
 import ru.practicum.event.hub.scenarion.ScenarioRemovedEvent;
-
 import java.time.Instant;
 
 @JsonTypeInfo(

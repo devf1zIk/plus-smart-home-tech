@@ -10,7 +10,6 @@ import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.event.sensor.enums.SensorEventType;
 import ru.practicum.event.sensor.types.*;
-
 import java.time.Instant;
 
 @Setter
