@@ -7,27 +7,30 @@ import ru.practicum.event.hub.enums.*;
 import ru.practicum.event.hub.device.DeviceAction;
 import ru.practicum.event.hub.device.DeviceAddedEvent;
 import ru.practicum.event.hub.device.DeviceRemovedEvent;
-import ru.practicum.event.hub.scenarion.ScenarioAddedEvent;
-import ru.practicum.event.hub.scenarion.ScenarioCondition;
-import ru.practicum.event.hub.scenarion.ScenarioRemovedEvent;
+import ru.practicum.event.hub.scenario.ScenarioAddedEvent;
+import ru.practicum.event.hub.scenario.ScenarioCondition;
+import ru.practicum.event.hub.scenario.ScenarioRemovedEvent;
 import ru.yandex.practicum.kafka.telemetry.event.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @UtilityClass
 public class HubEventMapper {
 
-    public static HubEventAvro HubEventAvro(HubEvent e) {
+    public static HubEventAvro toAvro(HubEvent e) {
         if (e == null) throw new IllegalArgumentException("hub event is null");
+
+        Instant ts = (e.getTimestamp() != null) ? e.getTimestamp() : Instant.now();
 
         return HubEventAvro.newBuilder()
                 .setHubId(e.getHubId())
-                .setTimestamp(e.getTimestamp())
-                .setPayload(toHubEventAvroPay(e))
+                .setTimestamp(ts)
+                .setPayload(buildPayload(e))
                 .build();
     }
 
-    public static SpecificRecordBase toHubEventAvroPay(HubEvent e) {
+    public static SpecificRecordBase buildPayload(HubEvent e) {
         HubEventType t = e.getType();
 
         if (t == HubEventType.DEVICE_ADDED) {

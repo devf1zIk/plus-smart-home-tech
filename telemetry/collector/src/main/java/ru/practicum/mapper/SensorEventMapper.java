@@ -5,20 +5,23 @@ import org.apache.avro.specific.SpecificRecordBase;
 import ru.practicum.event.sensor.base.SensorEvent;
 import ru.practicum.event.sensor.types.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
+import java.time.Instant;
 
 @UtilityClass
 public class SensorEventMapper {
 
-    public static SensorEventAvro SensorEventAvro(SensorEvent sensorEvent) {
+    public static SensorEventAvro toAvro(SensorEvent e) {
+
+        Instant ts = (e.getTimestamp() != null) ? e.getTimestamp() : Instant.now();
         return SensorEventAvro.newBuilder()
-                .setId(sensorEvent.getId())
-                .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
-                .setPayload(toSensorEventAvroPay(sensorEvent))
+                .setId(e.getId())
+                .setHubId(e.getHubId())
+                .setTimestamp(ts)
+                .setPayload(buildPayload(e))
                 .build();
     }
 
-    public static SpecificRecordBase toSensorEventAvroPay(SensorEvent sensorEvent) {
+    public static SpecificRecordBase buildPayload(SensorEvent sensorEvent) {
         switch (sensorEvent.getType()) {
             case MOTION_SENSOR_EVENT -> {
                 MotionSensorEvent e = (MotionSensorEvent) sensorEvent;

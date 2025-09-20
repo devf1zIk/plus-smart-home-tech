@@ -24,6 +24,7 @@ public class GlobalAvroSerializer implements Serializer<SpecificRecordBase> {
             BinaryEncoder encoder = encoderFactory.binaryEncoder(byteArrayOutputStream, null);
             DatumWriter<SpecificRecordBase> writer = new SpecificDatumWriter<>(specificRecordBase.getSchema());
             writer.setSchema(specificRecordBase.getSchema());
+            writer.write(specificRecordBase, encoder);
             encoder.flush();
             return (byteArrayOutputStream.toByteArray());
         } catch (IOException e) {

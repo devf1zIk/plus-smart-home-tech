@@ -23,7 +23,7 @@ public class EventServiceImpl implements  EventService {
     public void publishSensorEvent(SensorEvent event) {
         String topic = kafkaProperties.getSensorEventsTopic();
         String key = event.getHubId();
-        SpecificRecordBase avroEvent = SensorEventMapper.toSensorEventAvroPay(event);
+        SpecificRecordBase avroEvent = SensorEventMapper.toAvro(event);
 
         log.info("Preparing to publish sensor event to Kafka | topic={} | key={} | timestamp={}",
                 topic, key, event.getTimestamp().toEpochMilli());
@@ -35,7 +35,7 @@ public class EventServiceImpl implements  EventService {
     public void publishHubEvent(HubEvent event) {
         String topic = kafkaProperties.getHubEventsTopic();
         String key = event.getHubId();
-        SpecificRecordBase avroEvent = HubEventMapper.toHubEventAvroPay(event);
+        SpecificRecordBase avroEvent = HubEventMapper.toAvro(event);
 
         log.info("Preparing to publish hub event to Kafka | topic={} | key={} | timestamp={}",
                 topic, key, event.getTimestamp().toEpochMilli());

@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 import ru.practicum.event.hub.device.DeviceAddedEvent;
 import ru.practicum.event.hub.device.DeviceRemovedEvent;
 import ru.practicum.event.hub.enums.HubEventType;
-import ru.practicum.event.hub.scenarion.ScenarioAddedEvent;
-import ru.practicum.event.hub.scenarion.ScenarioRemovedEvent;
+import ru.practicum.event.hub.scenario.ScenarioAddedEvent;
+import ru.practicum.event.hub.scenario.ScenarioRemovedEvent;
 import java.time.Instant;
 
 @JsonTypeInfo(

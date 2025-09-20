@@ -1,4 +1,4 @@
-package ru.practicum.event.hub.scenarion;
+package ru.practicum.event.hub.scenario;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
