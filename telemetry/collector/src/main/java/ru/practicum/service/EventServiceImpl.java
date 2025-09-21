@@ -6,8 +6,8 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Service;
 import ru.practicum.event.hub.base.HubEvent;
 import ru.practicum.event.sensor.base.SensorEvent;
-import ru.practicum.KafkaConfig.KafkaConfigProperties;
-import ru.practicum.KafkaConfig.KafkaEventProducer;
+import ru.practicum.kafka.KafkaConfigProperties;
+import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.HubEventMapper;
 import ru.practicum.mapper.SensorEventMapper;
 
@@ -28,7 +28,7 @@ public class EventServiceImpl implements  EventService {
         log.info("Preparing to publish sensor event to Kafka | topic={} | key={} | timestamp={}",
                 topic, key, event.getTimestamp().toEpochMilli());
 
-        kafkaEventProducer.send(topic, key, avroEvent);
+        kafkaEventProducer.send(topic, key, event.getTimestamp(), avroEvent);
     }
 
     @Override
@@ -40,6 +40,6 @@ public class EventServiceImpl implements  EventService {
         log.info("Preparing to publish hub event to Kafka | topic={} | key={} | timestamp={}",
                 topic, key, event.getTimestamp().toEpochMilli());
 
-        kafkaEventProducer.send(topic, key, avroEvent);
+        kafkaEventProducer.send(topic, key, event.getTimestamp(), avroEvent);
     }
 }

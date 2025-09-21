@@ -1,4 +1,4 @@
-package ru.practicum.KafkaConfig;
+package ru.practicum.kafka;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

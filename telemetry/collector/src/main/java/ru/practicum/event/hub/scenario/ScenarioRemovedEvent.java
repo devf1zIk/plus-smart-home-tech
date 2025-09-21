@@ -17,7 +17,6 @@ import ru.practicum.event.hub.enums.HubEventType;
 public class ScenarioRemovedEvent extends HubEvent {
 
     @NotBlank
-    @Size(min = 3, max = 2147483647)
     String name;
 
     @Override
