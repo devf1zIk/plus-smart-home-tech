@@ -23,10 +23,7 @@ message EventEnvelope {
 message PublishBatchRequest { repeated EventEnvelope events = 1; }
 
 service CollectorController {
-  rpc PublishHub(telemetry.message.event.HubEventProto) returns (Ack);
-  rpc PublishSensor(telemetry.message.event.SensorEventProto) returns (Ack);
-  rpc PublishBatch(PublishBatchRequest) returns (Ack);
-  rpc PublishStream(stream EventEnvelope) returns (Ack);
-  rpc Pipe(stream EventEnvelope) returns (stream Ack);
+  rpc CollectHubEvent(telemetry.message.event.HubEventProto) returns (Ack);
+  rpc CollectSensorEvent(telemetry.message.event.SensorEventProto) returns (Ack);
   rpc Ping(google.protobuf.Empty) returns (Ack);
 }
