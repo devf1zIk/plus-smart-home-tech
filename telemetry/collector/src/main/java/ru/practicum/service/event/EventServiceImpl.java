@@ -1,4 +1,4 @@
-package ru.practicum.service;
+package ru.practicum.service.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import ru.practicum.mapper.SensorEventMapper;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EventServiceImpl implements  EventService {
+public class EventServiceImpl implements EventService {
 
     private final KafkaConfigProperties kafkaProperties;
     private final KafkaEventProducer kafkaEventProducer;
