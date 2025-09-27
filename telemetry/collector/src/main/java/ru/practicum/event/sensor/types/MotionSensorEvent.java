@@ -1,16 +1,15 @@
 package ru.practicum.event.sensor.types;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.event.sensor.base.SensorEvent;
 import ru.practicum.event.sensor.enums.SensorEventType;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MotionSensorEvent extends SensorEvent {
