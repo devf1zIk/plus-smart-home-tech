@@ -1,4 +1,4 @@
-package ru.practicum.service;
+package ru.practicum.service.event;
 
 import ru.practicum.event.hub.base.HubEvent;
 import ru.practicum.event.sensor.base.SensorEvent;
