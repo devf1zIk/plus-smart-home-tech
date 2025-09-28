@@ -9,15 +9,15 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.mapper.ProtoMapper;
 import ru.practicum.service.sensor.SensorService;
-import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerOuterClass.Ack;
+import ru.yandex.practicum.grpc.telemetry.collector.EventControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 @GrpcService
 @Slf4j
 @RequiredArgsConstructor
-public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
+public class EventController extends EventControllerGrpc.EventControllerImplBase {
 
     private final ProtoMapper protoMapper;
     private final SensorService sensorService;
