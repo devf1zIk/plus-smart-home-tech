@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package telemetry.collector;
+package telemetry.service.collector;
 
 import "telemetry/messages/hub_event.proto";
 import "telemetry/messages/sensor_event.proto";
@@ -22,8 +22,8 @@ message EventEnvelope {
 
 message PublishBatchRequest { repeated EventEnvelope events = 1; }
 
-service EventController {
-  rpc CollectHubEvent(telemetry.message.event.HubEventProto) returns (Ack);
-  rpc CollectSensorEvent(telemetry.message.event.SensorEventProto) returns (Ack);
+service CollectorController {
+  rpc collectHubEvent(telemetry.message.event.HubEventProto) returns (Ack);
+  rpc collectSensorEvent(telemetry.message.event.SensorEventProto) returns (Ack);
   rpc Ping(google.protobuf.Empty) returns (Ack);
 }
