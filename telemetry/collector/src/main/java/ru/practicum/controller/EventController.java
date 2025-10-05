@@ -1,36 +1,45 @@
 package ru.practicum.controller;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.event.hub.base.HubEvent;
-import ru.practicum.event.sensor.base.SensorEvent;
-import ru.practicum.service.event.EventService;
+import com.google.protobuf.Empty;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+import ru.practicum.handler.sensor.SensorEventHandler;
+import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@RestController
-@Slf4j
-@RequestMapping("/events")
-@RequiredArgsConstructor
-public class EventController {
+@GrpcService
+public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
 
-    private final EventService eventService;
+    private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlers;
 
-    @PostMapping(path = "/sensors", consumes = "application/json")
-    public ResponseEntity<Void> collectSensor(@Valid @RequestBody SensorEvent event) {
-        log.debug("Incoming /events/sensors: {}", event);
-        eventService.publishSensorEvent(event);
-        return ResponseEntity.accepted().build();
+    public EventController(Set<SensorEventHandler> sensorEventHandlers) {
+        this.sensorEventHandlers = sensorEventHandlers.stream()
+                .collect(Collectors.toMap(SensorEventHandler::getMessageType, Function.identity()));
     }
 
-    @PostMapping(path = "/hubs", consumes = "application/json")
-    public ResponseEntity<Void> collectHub(@Valid @RequestBody HubEvent event) {
-        log.debug("Incoming /events/hubs: {}", event);
-        eventService.publishHubEvent(event);
-        return ResponseEntity.accepted().build();
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            SensorEventProto.PayloadCase payloadCase = request.getPayloadCase();
+
+            if (sensorEventHandlers.containsKey(payloadCase)) {
+                sensorEventHandlers.get(payloadCase).handle(request);
+            } else {
+                throw new IllegalArgumentException("Неизвестный тип события: " + payloadCase);
+            }
+
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(new StatusRuntimeException(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .withCause(e)));
+        }
     }
 }

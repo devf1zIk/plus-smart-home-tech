@@ -14,11 +14,11 @@ message SensorEventProto {
   string hub_id = 3;
 
   oneof payload {
-    MotionSensorProto      motion       = 4;
-    TemperatureSensorProto temperature  = 5;
-    LightSensorProto       light        = 6;
-    ClimateSensorProto     climate      = 7;
-    SwitchSensorProto      sw           = 8;
+    MotionSensorProto motion_sensor_event = 5;
+    TemperatureSensorProto temperature_sensor_event = 6;
+    LightSensorProto light_sensor_event = 7;
+    ClimateSensorProto climate_sensor_event = 8;
+    SwitchSensorProto switch_sensor_event = 9;
   }
 }
 

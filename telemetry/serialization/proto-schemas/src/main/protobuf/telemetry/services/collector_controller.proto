@@ -9,8 +9,6 @@ import "google/protobuf/empty.proto";
 option java_package = "ru.yandex.practicum.grpc.telemetry.collector";
 option java_outer_classname = "CollectorControllerOuterClass";
 
-message Ack { string status = 1; string message =  2; }
-
 message EventEnvelope {
   oneof payload {
     telemetry.message.event.HubEventProto    hub    = 1;
@@ -23,7 +21,6 @@ message EventEnvelope {
 message PublishBatchRequest { repeated EventEnvelope events = 1; }
 
 service CollectorController {
-  rpc collectHubEvent(telemetry.message.event.HubEventProto) returns (Ack);
-  rpc collectSensorEvent(telemetry.message.event.SensorEventProto) returns (Ack);
-  rpc Ping(google.protobuf.Empty) returns (Ack);
+  rpc CollectHubEvent(telemetry.message.event.HubEventProto) returns (google.protobuf.Empty);
+  rpc CollectSensorEvent(telemetry.message.event.SensorEventProto) returns (google.protobuf.Empty);
 }
