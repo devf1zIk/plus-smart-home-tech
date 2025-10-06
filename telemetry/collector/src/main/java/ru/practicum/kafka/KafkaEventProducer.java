@@ -2,11 +2,16 @@ package ru.practicum.kafka;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Properties;
@@ -16,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class KafkaEventProducer implements AutoCloseable {
 
-    private final KafkaProducer<String, SpecificRecord> producer;
+    private final KafkaProducer<String, byte[]> producer;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public KafkaEventProducer(KafkaConfigProperties kafkaConfig) {
@@ -31,12 +36,14 @@ public class KafkaEventProducer implements AutoCloseable {
     public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
 
-        ProducerRecord<String, SpecificRecord> record = new ProducerRecord<>(
+        byte[] valueBytes = avroToBytes(value);
+
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(
                 topic,
                 null,
                 ts,
                 key,
-                value
+                valueBytes
         );
 
         producer.send(record, (metadata, exception) -> {
@@ -48,6 +55,20 @@ public class KafkaEventProducer implements AutoCloseable {
                         metadata.topic(), metadata.partition(), metadata.offset(), metadata.timestamp());
             }
         });
+    }
+
+    private byte[] avroToBytes(SpecificRecord record) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            DatumWriter<SpecificRecord> writer = new org.apache.avro.specific.SpecificDatumWriter<>(record.getSchema());
+
+            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
+            writer.write(record, encoder);
+            encoder.flush();
+
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize Avro record to bytes", e);
+        }
     }
 
     @Override
