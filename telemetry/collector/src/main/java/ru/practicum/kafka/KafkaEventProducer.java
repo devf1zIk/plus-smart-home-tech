@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class KafkaEventProducer implements AutoCloseable {
 
-    private final KafkaProducer<String, SpecificRecordBase> producer;
+    private final KafkaProducer<String, byte[]> producer;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public KafkaEventProducer(KafkaConfigProperties kafkaConfig) {
@@ -28,15 +28,17 @@ public class KafkaEventProducer implements AutoCloseable {
         this.producer = new KafkaProducer<>(props);
     }
 
-    public void send(String topic, String key, Instant timestamp, SpecificRecordBase value) {
+    public void send(String topic, String key, Instant timestamp, com.google.protobuf.Message value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
 
-        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
+        byte[] valueBytes = value.toByteArray();
+
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(
                 topic,
                 null,
                 ts,
                 key,
-                value
+                valueBytes
         );
 
         producer.send(record, (metadata, exception) -> {
@@ -44,7 +46,7 @@ public class KafkaEventProducer implements AutoCloseable {
                 log.error("Kafka send failed: topic={} key={} ts={} err={}",
                         topic, key, ts, exception.toString());
             } else {
-                log.debug("Kafka sent: topic={} partition={} offset={} ts={}",
+                log.info("✅ Kafka sent: topic={} partition={} offset={} ts={}",
                         metadata.topic(), metadata.partition(), metadata.offset(), metadata.timestamp());
             }
         });

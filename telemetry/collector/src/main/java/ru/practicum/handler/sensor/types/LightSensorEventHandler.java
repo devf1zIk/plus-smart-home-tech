@@ -1,11 +1,18 @@
 package ru.practicum.handler.sensor.types;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.handler.sensor.SensorEventHandler;
+import ru.practicum.kafka.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import java.time.Instant;
 
 @Component
+@RequiredArgsConstructor
 public class LightSensorEventHandler implements SensorEventHandler {
+
+    private final KafkaEventProducer kafkaProducer;
+    private final String sensorEventsTopic = "telemetry.sensors.v1";
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -15,5 +22,12 @@ public class LightSensorEventHandler implements SensorEventHandler {
     @Override
     public void handle(SensorEventProto event) {
         System.out.println("Light sensor event: Luminosity=" + event.getLightSensorEvent().getLuminosity());
+
+        kafkaProducer.send(
+                sensorEventsTopic,
+                event.getHubId(),
+                Instant.now(),
+                event
+        );
     }
 }
