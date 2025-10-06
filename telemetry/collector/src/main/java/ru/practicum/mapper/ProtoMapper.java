@@ -1,72 +1,60 @@
 package ru.practicum.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.event.sensor.base.SensorEvent;
 import ru.practicum.event.sensor.types.*;
-import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import java.time.Instant;
+import ru.yandex.practicum.grpc.telemetry.event.*;
 
 @Component
 public class ProtoMapper {
 
-    public SensorEvent toDomain(SensorEventProto proto) {
-        if (proto == null) {
-            throw new IllegalArgumentException("SensorEventProto is null");
+    public DomainSensorEvent toDomain(SensorEventProto proto) {
+        DomainSensorEvent out = new DomainSensorEvent();
+
+        out.setId(proto.getId());
+        out.setHubId(proto.getHubId());
+
+        switch (proto.getPayloadCase()) {
+            case MOTION_SENSOR_EVENT:
+                MotionSensorProto m = proto.getMotionSensorEvent();
+                out.setType(DomainSensorEvent.Type.MOTION);
+                out.setMotion(m.getMotion());
+                out.setLinkQuality(m.getLinkQuality());
+                out.setVoltage(m.getVoltage());
+                break;
+
+            case TEMPERATURE_SENSOR_EVENT:
+                TemperatureSensorProto t = proto.getTemperatureSensorEvent();
+                out.setType(DomainSensorEvent.Type.TEMPERATURE);
+                out.setTemperatureC(t.getTemperatureC());
+                out.setTemperatureF(t.getTemperatureF());
+                break;
+
+            case LIGHT_SENSOR_EVENT:
+                LightSensorProto l = proto.getLightSensorEvent();
+                out.setType(DomainSensorEvent.Type.LIGHT);
+                out.setLuminosity(l.getLuminosity());
+                out.setLinkQuality(l.getLinkQuality());
+                break;
+
+            case CLIMATE_SENSOR_EVENT:
+                ClimateSensorProto c = proto.getClimateSensorEvent();
+                out.setType(DomainSensorEvent.Type.CLIMATE);
+                out.setTemperatureC(c.getTemperatureC());
+                out.setHumidity(c.getHumidity());
+                out.setCo2Level(c.getCo2Level());
+                break;
+
+            case SWITCH_SENSOR_EVENT:
+                SwitchSensorProto s = proto.getSwitchSensorEvent();
+                out.setType(DomainSensorEvent.Type.SWITCH);
+                out.setSwitchState(s.getState());
+                break;
+
+            case PAYLOAD_NOT_SET:
+            default:
+                out.setType(DomainSensorEvent.Type.UNKNOWN);
+                break;
         }
-
-        final Instant ts = Instant.ofEpochSecond(
-                proto.getTimestamp().getSeconds(),
-                proto.getTimestamp().getNanos()
-        );
-
-        if (proto.hasMotion()) {
-            var p = proto.getMotion();
-            MotionSensorEvent e = new MotionSensorEvent();
-            setBase(e, proto, ts);
-            e.setLinkQuality(p.getLinkQuality());
-            e.setMotion(p.getMotion());
-            e.setVoltage(p.getVoltage());
-            return e;
-
-        } else if (proto.hasTemperature()) {
-            var p = proto.getTemperature();
-            TemperatureSensorEvent e = new TemperatureSensorEvent();
-            setBase(e, proto, ts);
-            e.setTemperatureC(p.getTemperatureC());
-            e.setTemperatureF(p.getTemperatureF());
-            return e;
-
-        } else if (proto.hasLight()) {
-            var p = proto.getLight();
-            LightSensorEvent e = new LightSensorEvent();
-            setBase(e, proto, ts);
-            e.setLinkQuality(p.getLinkQuality());
-            e.setLuminosity(p.getLuminosity());
-            return e;
-
-        } else if (proto.hasClimate()) {
-            var p = proto.getClimate();
-            ClimateSensorEvent e = new ClimateSensorEvent();
-            setBase(e, proto, ts);
-            e.setTemperatureC(p.getTemperatureC());
-            e.setHumidity(p.getHumidity());
-            e.setCo2Level(p.getCo2Level());
-            return e;
-
-        } else if (proto.hasSw()) {
-            var p = proto.getSw();
-            SwitchSensorEvent e = new SwitchSensorEvent();
-            setBase(e, proto, ts);
-            e.setState(p.getState());
-            return e;
-        }
-
-        throw new IllegalArgumentException("Unsupported payload in SensorEventProto: one of is empty");
-    }
-
-    private static void setBase(SensorEvent target, SensorEventProto proto, Instant ts) {
-        target.setId(proto.getId());
-        target.setHubId(proto.getHubId());
-        target.setTimestamp(ts);
+        return out;
     }
 }
