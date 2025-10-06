@@ -2,6 +2,7 @@ package ru.practicum.kafka;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class KafkaEventProducer implements AutoCloseable {
 
-    private final KafkaProducer<String, byte[]> producer;
+    private final KafkaProducer<String, SpecificRecord> producer;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public KafkaEventProducer(KafkaConfigProperties kafkaConfig) {
@@ -27,17 +28,15 @@ public class KafkaEventProducer implements AutoCloseable {
         this.producer = new KafkaProducer<>(props);
     }
 
-    public void send(String topic, String key, Instant timestamp, com.google.protobuf.Message value) {
+    public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
 
-        byte[] valueBytes = value.toByteArray();
-
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(
+        ProducerRecord<String, SpecificRecord> record = new ProducerRecord<>(
                 topic,
                 null,
                 ts,
                 key,
-                valueBytes
+                value
         );
 
         producer.send(record, (metadata, exception) -> {
