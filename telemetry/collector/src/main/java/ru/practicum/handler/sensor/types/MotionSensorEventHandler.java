@@ -14,8 +14,8 @@ public class MotionSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        System.out.println("Motion sensor event received: Hub=" + event.getHubId()
-                + ", Device=" + event.getDeviceId()
-                + ", Timestamp=" + event.getTimestamp());
+        var motion = event.getMotionSensorEvent();
+        System.out.printf("[Sensor] Motion event. hub=%s, motion=%s, linkQuality=%d, voltage=%d%n",
+                event.getHubId(), motion.getMotion(), motion.getLinkQuality(), motion.getVoltage());
     }
 }

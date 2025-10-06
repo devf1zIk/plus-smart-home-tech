@@ -14,7 +14,8 @@ public class DeviceAddedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventProto event) {
-        HubEventProto.DeviceAddedEventProto added = event.getDeviceAdded();
-        System.out.println("Device added: id=" + added.getId() + ", type=" + added.getType());
+        var added = event.getDeviceAdded();
+        System.out.printf("[Hub] DeviceAdded: id=%s, type=%s, hub=%s%n",
+                added.getId(), added.getType(), event.getHubId());
     }
 }
