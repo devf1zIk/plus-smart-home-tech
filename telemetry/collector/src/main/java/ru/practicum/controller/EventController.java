@@ -1,11 +1,11 @@
 package ru.practicum.controller;
 
-import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.service.EventService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
+import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerOuterClass.Ack;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
@@ -16,11 +16,12 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     private final EventService eventService;
 
     @Override
-    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Ack> responseObserver) {
         try {
             eventService.publishSensorEvent(request);
 
-            responseObserver.onNext(Empty.getDefaultInstance());
+            Ack ack = Ack.newBuilder().setSuccess(true).build();
+            responseObserver.onNext(ack);
             responseObserver.onCompleted();
 
         } catch (Exception e) {
@@ -31,11 +32,12 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     }
 
     @Override
-    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+    public void collectHubEvent(HubEventProto request, StreamObserver<Ack> responseObserver) {
         try {
             eventService.publishHubEvent(request);
 
-            responseObserver.onNext(Empty.getDefaultInstance());
+            Ack ack = Ack.newBuilder().setSuccess(true).build();
+            responseObserver.onNext(ack);
             responseObserver.onCompleted();
 
         } catch (Exception e) {

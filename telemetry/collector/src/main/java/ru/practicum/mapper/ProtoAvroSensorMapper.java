@@ -1,12 +1,12 @@
 package ru.practicum.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import java.time.Instant;
 
-@Component
+@UtilityClass
 public class ProtoAvroSensorMapper {
 
     public SensorEventAvro toAvro(SensorEventProto proto) {
@@ -15,12 +15,10 @@ public class ProtoAvroSensorMapper {
         }
 
         SensorEventAvro.Builder builder = SensorEventAvro.newBuilder();
-
-        builder.setPayload(proto.getId());
+        builder.setId(proto.getSensorId());
         builder.setHubId(proto.getHubId());
-
         Instant timestamp;
-        if (proto.hasTimestamp()) {
+        if (proto.getTimestamp() != null) {
             long seconds = proto.getTimestamp().getSeconds();
             int nanos = proto.getTimestamp().getNanos();
             timestamp = Instant.ofEpochSecond(seconds, nanos);
@@ -59,7 +57,7 @@ public class ProtoAvroSensorMapper {
         }
 
         if (payloadCase == SensorEventProto.PayloadCase.PAYLOAD_NOT_SET) {
-            throw new IllegalArgumentException("Sensor payload is empty for sensorId: " + proto.getId());
+            throw new IllegalArgumentException("Sensor payload is empty for sensorId: " + proto.getSensorId()); // ← ИСПРАВЛЕНО
         }
 
         throw new IllegalStateException("Unknown sensor payload case: " + payloadCase);

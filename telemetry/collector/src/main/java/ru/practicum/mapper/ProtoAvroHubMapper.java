@@ -1,14 +1,14 @@
 package ru.practicum.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@UtilityClass
 public class ProtoAvroHubMapper {
 
     public HubEventAvro toAvro(HubEventProto proto) {
@@ -79,7 +79,6 @@ public class ProtoAvroHubMapper {
         ScenarioAddedEventAvro.Builder builder = ScenarioAddedEventAvro.newBuilder();
         builder.setName(proto.getName());
 
-        // Маппим условия
         List<ScenarioConditionAvro> conditions = new ArrayList<>();
         for (ScenarioConditionProto conditionProto : proto.getConditionList()) {
             ScenarioConditionAvro condition = createScenarioCondition(conditionProto);
@@ -87,7 +86,6 @@ public class ProtoAvroHubMapper {
         }
         builder.setConditions(conditions);
 
-        // Маппим действия
         List<DeviceActionAvro> actions = new ArrayList<>();
         for (DeviceActionProto actionProto : proto.getActionList()) {
             DeviceActionAvro action = createDeviceAction(actionProto);
