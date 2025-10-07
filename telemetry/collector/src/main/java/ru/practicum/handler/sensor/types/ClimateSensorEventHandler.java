@@ -28,8 +28,8 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
                 climate.getHumidity(),
                 climate.getCo2Level());
 
-            var avroEvent = protoMapper.toAvro(event);
-            String sensorEventsTopic = "telemetry.sensors.v1";
-            kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent);
+        var avroEvent = protoMapper.toAvro(event);
+        String sensorEventsTopic = "telemetry.sensors.v1";
+        kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent);
     }
 }
