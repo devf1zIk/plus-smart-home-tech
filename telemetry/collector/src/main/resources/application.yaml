@@ -13,3 +13,8 @@ grpc:
   server:
     port: 59091
     reflection-service-enabled: true
+logging:
+  level:
+    root: INFO
+    ru.practicum: DEBUG
+    ru.practicum.kafka: DEBUG
