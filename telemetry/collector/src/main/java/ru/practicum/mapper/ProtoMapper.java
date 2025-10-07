@@ -67,7 +67,6 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setSensorId(proto.getSensorId())
                 .setTimestamp(mapTimestamp(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
@@ -167,10 +166,10 @@ public class ProtoMapper {
         return builder.build();
     }
 
-    private long mapTimestamp(Timestamp timestamp) {
+    private Instant mapTimestamp(Timestamp timestamp) {
         if (timestamp == null) {
             System.out.println("[DEBUG] Timestamp is null, using current time");
-            return Instant.now().toEpochMilli();
+            return Instant.now();
         }
 
         long seconds = timestamp.getSeconds();
@@ -182,10 +181,10 @@ public class ProtoMapper {
 
         if (result < 1262304000000L) {
             System.out.println("[DEBUG] Timestamp too old, using current time");
-            return Instant.now().toEpochMilli();
+            return Instant.now();
         }
 
-        return result;
+        return Instant.ofEpochSecond(result);
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
