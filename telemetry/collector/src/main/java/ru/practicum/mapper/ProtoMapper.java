@@ -168,12 +168,24 @@ public class ProtoMapper {
     }
 
     private long mapTimestamp(Timestamp timestamp) {
-        if (timestamp == null || timestamp.getSeconds() == 0) {
+        if (timestamp == null) {
+            System.out.println("[DEBUG] Timestamp is null, using current time");
             return Instant.now().toEpochMilli();
         }
+
         long seconds = timestamp.getSeconds();
         int nanos = timestamp.getNanos();
-        return seconds * 1000 + nanos / 1_000_000;
+        long result = seconds * 1000 + nanos / 1_000_000;
+
+        System.out.printf("[DEBUG] Timestamp mapping: seconds=%d, nanos=%d, result=%d%n",
+                seconds, nanos, result);
+
+        if (result < 1262304000000L) {
+            System.out.println("[DEBUG] Timestamp too old, using current time");
+            return Instant.now().toEpochMilli();
+        }
+
+        return result;
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {

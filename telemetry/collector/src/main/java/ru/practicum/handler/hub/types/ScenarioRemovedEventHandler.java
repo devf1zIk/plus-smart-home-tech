@@ -13,7 +13,6 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
 
     private final KafkaEventProducer kafkaProducer;
     private final ProtoMapper protoMapper;
-    private final String hubEventsTopic = "telemetry.hubs.v1";
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -27,6 +26,7 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
                 scenario.getName(), event.getHubId());
 
         var avroEvent = protoMapper.toAvro(event);
+        String hubEventsTopic = "telemetry.hubs.v1";
         kafkaProducer.send(hubEventsTopic, event.getHubId(), avroEvent);
     }
 }

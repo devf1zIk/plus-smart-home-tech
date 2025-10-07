@@ -13,7 +13,6 @@ public class LightSensorEventHandler implements SensorEventHandler {
 
     private final KafkaEventProducer kafkaProducer;
     private final ProtoMapper protoMapper;
-    private final String sensorEventsTopic = "telemetry.sensors.v1";
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -23,10 +22,11 @@ public class LightSensorEventHandler implements SensorEventHandler {
     @Override
     public void handle(SensorEventProto event) {
         var light = event.getLightSensorEvent();
-        System.out.printf("[Sensor] Light event. hub=%s, luminosity=%d, linkQuality=%d%n",
+        System.out.printf("[Sensor] Light event. hub=%s, luminosity=%s, linkQuality=%s%n",
                 event.getHubId(), light.getLuminosity(), light.getLinkQuality());
 
         var avroEvent = protoMapper.toAvro(event);
+        String sensorEventsTopic = "telemetry.sensors.v1";
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent);
     }
 }

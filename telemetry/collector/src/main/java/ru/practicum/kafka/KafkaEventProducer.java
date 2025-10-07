@@ -39,7 +39,7 @@ public class KafkaEventProducer implements AutoCloseable {
 
     public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
-        logAvroDetails("BEFORE SERIALIZATION", value);
+        logAvroDetails(value);
         byte[] valueBytes = avroToBytes(value);
 
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(
@@ -75,9 +75,9 @@ public class KafkaEventProducer implements AutoCloseable {
         }
     }
 
-    private void logAvroDetails(String stage, SpecificRecord record) {
+    private void logAvroDetails(SpecificRecord record) {
         try {
-            log.info("=== AVRO DEBUG {} ===", stage);
+            log.info("=== AVRO DEBUG {} ===", "BEFORE SERIALIZATION");
             log.info("Class: {}", record.getClass().getName());
             log.info("Schema name: {}", record.getSchema().getFullName());
             log.info("Schema: {}", record.getSchema().toString(true));

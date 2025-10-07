@@ -13,7 +13,6 @@ public class TemperatureSensorEventHandler implements SensorEventHandler {
 
     private final KafkaEventProducer kafkaProducer;
     private final ProtoMapper protoMapper;
-    private final String sensorEventsTopic = "telemetry.sensors.v1";
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -23,10 +22,11 @@ public class TemperatureSensorEventHandler implements SensorEventHandler {
     @Override
     public void handle(SensorEventProto event) {
         var temp = event.getTemperatureSensorEvent();
-        System.out.printf("[Sensor] Temperature event. hub=%s, temp=%d°C/%d°F%n",
+        System.out.printf("[Sensor] Temperature event. hub=%s, temp=%s°C/%s°F%n",
                 event.getHubId(), temp.getTemperatureC(), temp.getTemperatureF());
 
         var avroEvent = protoMapper.toAvro(event);
+        String sensorEventsTopic = "telemetry.sensors.v1";
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent);
     }
 }
