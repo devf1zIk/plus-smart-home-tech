@@ -66,6 +66,7 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
+                .setSensorId(proto.getSensorId())
                 .setTimestamp(mapTimestamp(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {

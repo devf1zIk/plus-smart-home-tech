@@ -12,6 +12,7 @@ message SensorEventProto {
   string id = 1;
   google.protobuf.Timestamp timestamp = 2;
   string hub_id = 3;
+  string sensor_id = 4;
 
   oneof payload {
     MotionSensorProto motion_sensor_event = 5;
