@@ -145,7 +145,7 @@ public class ProtoMapper {
                 break;
             case VALUE_NOT_SET:
             default:
-                builder.setValue(0);
+                builder.setValue(null);
                 break;
         }
 
@@ -160,7 +160,7 @@ public class ProtoMapper {
         if (action.hasValue()) {
             builder.setValue(action.getValue());
         } else {
-            builder.setValue(0);
+            builder.setValue(null);
         }
 
         return builder.build();
