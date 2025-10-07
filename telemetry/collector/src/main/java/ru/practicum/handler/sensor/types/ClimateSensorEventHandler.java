@@ -6,7 +6,6 @@ import ru.practicum.handler.sensor.SensorEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.ProtoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import ru.yandex.practicum.grpc.telemetry.event.ClimateSensorProto;
 
 @Component
 @RequiredArgsConstructor
@@ -24,25 +23,18 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
     public void handle(SensorEventProto event) {
         var climateData = event.getClimateSensorEvent();
 
-        var correctEvent = SensorEventProto.newBuilder()
-                .setId(event.getId())
-                .setHubId(event.getHubId())
-                .setTimestamp(event.getTimestamp())
-                .setClimateSensorEvent(ClimateSensorProto.newBuilder()
-                        .setTemperatureC(climateData.getTemperatureC())
-                        .setHumidity(climateData.getHumidity())
-                        .setCo2Level(climateData.getCo2Level())
-                        .build())
-                .build();
-
-        System.out.printf("[Sensor] Climate event. hub=%s, temp=%s°C, humidity=%s%%, co2=%s%n",
-                correctEvent.getHubId(),
+        System.out.printf("[Sensor] Climate event. hub=%s, sensor=%s, temp=%s°C, humidity=%s%%, co2=%s%n",
+                event.getHubId(),
+                event.getId(),
                 climateData.getTemperatureC(),
                 climateData.getHumidity(),
                 climateData.getCo2Level());
 
-        var avroEvent = protoMapper.toAvro(correctEvent);
+        var avroEvent = protoMapper.toAvro(event);
+
         String sensorEventsTopic = "telemetry.sensors.v1";
-        kafkaProducer.send(sensorEventsTopic, correctEvent.getHubId(), avroEvent);
+        kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent);
+
+        System.out.println("[DEBUG] Climate event sent to Kafka: " + sensorEventsTopic);
     }
 }
