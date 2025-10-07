@@ -1,5 +1,6 @@
 package ru.practicum.mapper;
 
+import com.google.protobuf.Timestamp;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
@@ -166,11 +167,11 @@ public class ProtoMapper {
         return builder.build();
     }
 
-    private Instant mapTimestamp(com.google.protobuf.Timestamp timestamp) {
+    private long mapTimestamp(Timestamp timestamp) {
         if (timestamp == null) {
-            return Instant.now();
+            return Instant.now().toEpochMilli();
         }
-        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos()).toEpochMilli();
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
