@@ -4,6 +4,7 @@ import com.google.protobuf.Timestamp;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.grpc.telemetry.event.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
+
 import java.time.Instant;
 
 @Component
@@ -12,7 +13,7 @@ public class ProtoMapper {
     public HubEventAvro toAvro(HubEventProto proto) {
         var builder = HubEventAvro.newBuilder()
                 .setHubId(proto.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(mapTimestamp(proto.getTimestamp())));
+                .setTimestamp(mapToInstant(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
             case DEVICE_ADDED:
@@ -67,7 +68,7 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(mapTimestamp(proto.getTimestamp())));
+                .setTimestamp(mapToInstant(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
             case MOTION_SENSOR_EVENT:
@@ -152,6 +153,26 @@ public class ProtoMapper {
         return builder.build();
     }
 
+    private Instant mapToInstant(Timestamp timestamp) {
+        if (timestamp == null) {
+            return Instant.now();
+        }
+
+        long seconds = timestamp.getSeconds();
+        int nanos = timestamp.getNanos();
+
+        if (seconds == 0 && nanos == 0) {
+            return Instant.now();
+        }
+
+        long millis = seconds * 1000L + nanos / 1_000_000;
+        if (millis < 1262304000000L) {
+            return Instant.now();
+        }
+
+        return Instant.ofEpochSecond(seconds, nanos);
+    }
+
     private DeviceActionAvro mapAction(DeviceActionProto action) {
         var builder = DeviceActionAvro.newBuilder()
                 .setSensorId(action.getSensorId())
@@ -165,23 +186,6 @@ public class ProtoMapper {
 
         return builder.build();
     }
-
-    private long mapTimestamp(com.google.protobuf.Timestamp timestamp) {
-        if (timestamp == null) {
-            return Instant.now().toEpochMilli();
-        }
-        long seconds = timestamp.getSeconds();
-        int nanos = timestamp.getNanos();
-        if (seconds == 0 && nanos < 10_000_000) {
-            return Instant.now().toEpochMilli();
-        }
-        long millis = seconds * 1000L + nanos / 1_000_000;
-        if (millis < 1262304000000L) {
-            return Instant.now().toEpochMilli();
-        }
-        return millis;
-    }
-
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
         if (type == null) return DeviceTypeAvro.MOTION_SENSOR;
