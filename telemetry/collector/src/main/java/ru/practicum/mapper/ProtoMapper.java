@@ -172,11 +172,9 @@ public class ProtoMapper {
         }
         long seconds = timestamp.getSeconds();
         int nanos = timestamp.getNanos();
-
         if (seconds == 0 && nanos < 10_000_000) {
             return Instant.now().toEpochMilli();
         }
-
         long millis = seconds * 1000L + nanos / 1_000_000;
         if (millis < 1262304000000L) {
             return Instant.now().toEpochMilli();
