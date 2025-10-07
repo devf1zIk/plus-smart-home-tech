@@ -33,6 +33,10 @@ public class KafkaEventProducer implements AutoCloseable {
         this.producer = new KafkaProducer<>(props);
     }
 
+    public void send(String topic, String key, SpecificRecord value) {
+        send(topic, key, null, value);
+    }
+
     public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
 
