@@ -38,7 +38,7 @@ public class KafkaEventProducer implements AutoCloseable {
     }
 
     public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
-        long ts = timestamp != null ? timestamp.toEpochMilli() : System.currentTimeMillis();
+        long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
 
         byte[] valueBytes = avroToBytes(value);
 
