@@ -168,7 +168,7 @@ public class ProtoMapper {
     }
 
     private long mapTimestamp(Timestamp timestamp) {
-        if (timestamp == null) {
+        if (timestamp == null || timestamp.getSeconds() == 0) {
             return Instant.now().toEpochMilli();
         }
         long seconds = timestamp.getSeconds();
