@@ -66,7 +66,6 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setSensorId(proto.getId())
                 .setTimestamp(mapTimestamp(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
@@ -136,12 +135,17 @@ public class ProtoMapper {
                 .setType(mapConditionType(condition.getType()))
                 .setOperation(mapConditionOperation(condition.getOperation()));
 
-        if (condition.hasIntValue()) {
-            builder.setValue(condition.getIntValue());
-        } else if (condition.hasBoolValue()) {
-            builder.setValue(condition.getBoolValue());
-        } else {
-            builder.setValue(0);
+        switch (condition.getValueCase()) {
+            case INT_VALUE:
+                builder.setValue(condition.getIntValue());
+                break;
+            case BOOL_VALUE:
+                builder.setValue(condition.getBoolValue());
+                break;
+            case VALUE_NOT_SET:
+            default:
+                builder.setValue(0);
+                break;
         }
 
         return builder.build();
