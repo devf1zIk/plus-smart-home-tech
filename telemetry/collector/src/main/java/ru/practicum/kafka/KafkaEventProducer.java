@@ -39,7 +39,7 @@ public class KafkaEventProducer implements AutoCloseable {
 
     public void send(String topic, String key, Instant timestamp, SpecificRecord value) {
         long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
-
+        logAvroDetails("BEFORE SERIALIZATION", value);
         byte[] valueBytes = avroToBytes(value);
 
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(
@@ -72,6 +72,33 @@ public class KafkaEventProducer implements AutoCloseable {
             return outputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("Failed to serialize Avro record to bytes", e);
+        }
+    }
+
+    private void logAvroDetails(String stage, SpecificRecord record) {
+        try {
+            log.info("=== AVRO DEBUG {} ===", stage);
+            log.info("Class: {}", record.getClass().getName());
+            log.info("Schema name: {}", record.getSchema().getFullName());
+            log.info("Schema: {}", record.getSchema().toString(true));
+
+            record.getSchema().getFields().forEach(field -> {
+                try {
+                    Object value = record.get(field.pos());
+                    log.info("Field [{}] (pos: {}): type={}, value={}",
+                            field.name(), field.pos(), field.schema().getType(), value);
+
+                    if (field.schema().getType() == org.apache.avro.Schema.Type.UNION) {
+                        log.info("  Union types: {}", field.schema().getTypes());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to get field {}: {}", field.name(), e.getMessage());
+                }
+            });
+
+            log.info("=== END AVRO DEBUG ===");
+        } catch (Exception e) {
+            log.error("Failed to log Avro details: {}", e.getMessage());
         }
     }
 
