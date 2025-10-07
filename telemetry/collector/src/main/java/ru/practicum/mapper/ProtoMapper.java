@@ -170,14 +170,7 @@ public class ProtoMapper {
         if (timestamp == null) {
             return Instant.now();
         }
-        long seconds = timestamp.getSeconds();
-        int nanos = timestamp.getNanos();
-
-        if (seconds == 0 && nanos == 0) {
-            return Instant.now();
-        }
-
-        return Instant.ofEpochSecond(seconds, nanos);
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
