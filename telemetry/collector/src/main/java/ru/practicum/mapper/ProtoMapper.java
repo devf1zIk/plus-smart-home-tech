@@ -167,7 +167,17 @@ public class ProtoMapper {
     }
 
     private Instant mapTimestamp(com.google.protobuf.Timestamp timestamp) {
-        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+        if (timestamp == null) {
+            return Instant.now();
+        }
+        long seconds = timestamp.getSeconds();
+        int nanos = timestamp.getNanos();
+
+        if (seconds == 0 && nanos == 0) {
+            return Instant.now();
+        }
+
+        return Instant.ofEpochSecond(seconds, nanos);
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
