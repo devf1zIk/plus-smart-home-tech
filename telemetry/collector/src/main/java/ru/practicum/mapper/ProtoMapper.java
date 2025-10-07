@@ -51,7 +51,11 @@ public class ProtoMapper {
 
             case PAYLOAD_NOT_SET:
             default:
-                builder.setPayload(null);
+                var defaultPayload = DeviceAddedEventAvro.newBuilder()
+                        .setId("default")
+                        .setType(DeviceTypeAvro.MOTION_SENSOR)
+                        .build();
+                builder.setPayload(defaultPayload);
                 break;
         }
 
@@ -62,7 +66,7 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setSensorId(proto.getId()) // обычно sensor_id = id
+                .setSensorId(proto.getId())
                 .setTimestamp(mapTimestamp(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
@@ -114,27 +118,16 @@ public class ProtoMapper {
 
             case PAYLOAD_NOT_SET:
             default:
-                builder.setPayload(null);
+                var defaultPayload = MotionSensorAvro.newBuilder()
+                        .setLinkQuality(0)
+                        .setMotion(false)
+                        .setVoltage(0)
+                        .build();
+                builder.setPayload(defaultPayload);
                 break;
         }
 
         return builder.build();
-    }
-
-    private Instant mapTimestamp(com.google.protobuf.Timestamp timestamp) {
-        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
-    }
-
-    private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
-        if (type == null) return null;
-        return DeviceTypeAvro.valueOf(type.name());
-    }
-
-    private java.util.List<ScenarioConditionAvro> mapConditions(
-            java.util.List<ScenarioConditionProto> conditions) {
-        return conditions.stream()
-                .map(this::mapCondition)
-                .collect(java.util.stream.Collectors.toList());
     }
 
     private ScenarioConditionAvro mapCondition(ScenarioConditionProto condition) {
@@ -148,17 +141,10 @@ public class ProtoMapper {
         } else if (condition.hasBoolValue()) {
             builder.setValue(condition.getBoolValue());
         } else {
-            builder.setValue(null);
+            builder.setValue(0);
         }
 
         return builder.build();
-    }
-
-    private java.util.List<DeviceActionAvro> mapActions(
-            java.util.List<DeviceActionProto> actions) {
-        return actions.stream()
-                .map(this::mapAction)
-                .collect(java.util.stream.Collectors.toList());
     }
 
     private DeviceActionAvro mapAction(DeviceActionProto action) {
@@ -169,24 +155,47 @@ public class ProtoMapper {
         if (action.hasValue()) {
             builder.setValue(action.getValue());
         } else {
-            builder.setValue(null);
+            builder.setValue(0);
         }
 
         return builder.build();
     }
 
+    private Instant mapTimestamp(com.google.protobuf.Timestamp timestamp) {
+        return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+    }
+
+    private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
+        if (type == null) return DeviceTypeAvro.MOTION_SENSOR;
+        return DeviceTypeAvro.valueOf(type.name());
+    }
+
+    private java.util.List<ScenarioConditionAvro> mapConditions(
+            java.util.List<ScenarioConditionProto> conditions) {
+        return conditions.stream()
+                .map(this::mapCondition)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private java.util.List<DeviceActionAvro> mapActions(
+            java.util.List<DeviceActionProto> actions) {
+        return actions.stream()
+                .map(this::mapAction)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     private ConditionTypeAvro mapConditionType(ConditionTypeProto type) {
-        if (type == null) return null;
+        if (type == null) return ConditionTypeAvro.MOTION;
         return ConditionTypeAvro.valueOf(type.name());
     }
 
     private ConditionOperationAvro mapConditionOperation(ConditionOperationProto operation) {
-        if (operation == null) return null;
+        if (operation == null) return ConditionOperationAvro.EQUALS;
         return ConditionOperationAvro.valueOf(operation.name());
     }
 
     private ActionTypeAvro mapActionType(ActionTypeProto type) {
-        if (type == null) return null;
+        if (type == null) return ActionTypeAvro.ACTIVATE;
         return ActionTypeAvro.valueOf(type.name());
     }
 }
