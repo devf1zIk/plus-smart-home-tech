@@ -2,7 +2,6 @@ package ru.practicum.controller;
 
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.service.EventService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
@@ -10,10 +9,13 @@ import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 @GrpcService
-@RequiredArgsConstructor
 public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
 
     private final EventService eventService;
+
+    public EventController(EventService eventService) {
+        this.eventService = eventService;
+    }
 
     @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
