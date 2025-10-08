@@ -1,7 +1,8 @@
-package ru.practicum.handler.hub;
+package ru.practicum.handler.hub.types;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.handler.hub.HubEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.protoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;

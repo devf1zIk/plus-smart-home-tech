@@ -9,39 +9,40 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Component
 public class protoMapper {
 
     public HubEventAvro toAvro(HubEventProto proto) {
+        log.info("Mapping HubEventProto to Avro: hubId={}, payloadCase={}",
+                proto.getHubId(), proto.getPayloadCase());
+
         var builder = HubEventAvro.newBuilder()
                 .setHubId(proto.getHubId())
                 .setTimestamp(map(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
             case DEVICE_ADDED:
+                log.debug("Mapping DEVICE_ADDED payload");
                 var deviceAdded = proto.getDeviceAdded();
                 var deviceAddedAvro = DeviceAddedEventAvro.newBuilder()
                         .setId(deviceAdded.getId())
                         .setType(mapDeviceType(deviceAdded.getType()))
                         .build();
                 builder.setPayload(deviceAddedAvro);
-                log.debug("Mapped DEVICE_ADDED event: id={}, type={}", deviceAdded.getId(), deviceAdded.getType());
                 break;
 
-
             case DEVICE_REMOVED:
+                log.debug("Mapping DEVICE_REMOVED payload");
                 var deviceRemoved = proto.getDeviceRemoved();
                 var deviceRemovedAvro = DeviceRemovedEventAvro.newBuilder()
                         .setId(deviceRemoved.getId())
                         .build();
                 builder.setPayload(deviceRemovedAvro);
-                log.debug("Mapped DEVICE_REMOVED event: id={}", deviceRemoved.getId());
                 break;
 
-
             case SCENARIO_ADDED:
+                log.debug("Mapping SCENARIO_ADDED payload");
                 var scenarioAdded = proto.getScenarioAdded();
                 var scenarioAddedAvro = ScenarioAddedEventAvro.newBuilder()
                         .setName(scenarioAdded.getName())
@@ -49,38 +50,46 @@ public class protoMapper {
                         .setActions(mapActions(scenarioAdded.getActionList()))
                         .build();
                 builder.setPayload(scenarioAddedAvro);
-                log.debug("Mapped SCENARIO_ADDED event: name={}", scenarioAdded.getName());
                 break;
 
-
             case SCENARIO_REMOVED:
+                log.debug("Mapping SCENARIO_REMOVED payload");
                 var scenarioRemoved = proto.getScenarioRemoved();
                 var scenarioRemovedAvro = ScenarioRemovedEventAvro.newBuilder()
                         .setName(scenarioRemoved.getName())
                         .build();
                 builder.setPayload(scenarioRemovedAvro);
-                log.debug("Mapped SCENARIO_REMOVED event: name={}", scenarioRemoved.getName());
                 break;
-
 
             case PAYLOAD_NOT_SET:
             default:
-                log.warn("Unknown or unset payload case for HubEvent: {}", proto.getPayloadCase());
+                log.warn("HubEvent payload not set, using default payload");
+                var defaultPayload = DeviceAddedEventAvro.newBuilder()
+                        .setId("default")
+                        .setType(DeviceTypeAvro.MOTION_SENSOR)
+                        .build();
+                builder.setPayload(defaultPayload);
                 break;
         }
 
-        return builder.build();
+        var result = builder.build();
+        log.info("HubEventAvro successfully mapped: hubId={}, payloadType={}",
+                result.getHubId(), result.getPayload().getClass().getSimpleName());
+        return result;
     }
 
     public SensorEventAvro toAvro(SensorEventProto proto) {
+        log.info("Mapping SensorEventProto to Avro: id={}, hubId={}, payloadCase={}",
+                proto.getId(), proto.getHubId(), proto.getPayloadCase());
+
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
                 .setTimestamp(map(proto.getTimestamp()));
 
-
         switch (proto.getPayloadCase()) {
             case MOTION_SENSOR_EVENT:
+                log.debug("Mapping MOTION_SENSOR_EVENT payload");
                 var motion = proto.getMotionSensorEvent();
                 var motionAvro = MotionSensorAvro.newBuilder()
                         .setLinkQuality(motion.getLinkQuality())
@@ -88,33 +97,30 @@ public class protoMapper {
                         .setVoltage(motion.getVoltage())
                         .build();
                 builder.setPayload(motionAvro);
-                log.debug("Mapped MOTION_SENSOR_EVENT: id={}, motion={}", proto.getId(), motion.getMotion());
                 break;
 
-
             case TEMPERATURE_SENSOR_EVENT:
+                log.debug("Mapping TEMPERATURE_SENSOR_EVENT payload");
                 var temp = proto.getTemperatureSensorEvent();
                 var tempAvro = TemperatureSensorAvro.newBuilder()
                         .setTemperatureC(temp.getTemperatureC())
                         .setTemperatureF(temp.getTemperatureF())
                         .build();
                 builder.setPayload(tempAvro);
-                log.debug("Mapped TEMPERATURE_SENSOR_EVENT: id={}, temp={}°C", proto.getId(), temp.getTemperatureC());
                 break;
 
-
             case LIGHT_SENSOR_EVENT:
+                log.debug("Mapping LIGHT_SENSOR_EVENT payload");
                 var light = proto.getLightSensorEvent();
                 var lightAvro = LightSensorAvro.newBuilder()
                         .setLinkQuality(light.getLinkQuality())
                         .setLuminosity(light.getLuminosity())
                         .build();
                 builder.setPayload(lightAvro);
-                log.debug("Mapped LIGHT_SENSOR_EVENT: id={}, luminosity={}", proto.getId(), light.getLuminosity());
                 break;
 
-
             case CLIMATE_SENSOR_EVENT:
+                log.debug("Mapping CLIMATE_SENSOR_EVENT payload");
                 var climate = proto.getClimateSensorEvent();
                 var climateAvro = ClimateSensorAvro.newBuilder()
                         .setTemperatureC(climate.getTemperatureC())
@@ -122,47 +128,43 @@ public class protoMapper {
                         .setCo2Level(climate.getCo2Level())
                         .build();
                 builder.setPayload(climateAvro);
-                log.debug("Mapped CLIMATE_SENSOR_EVENT: id={}, temp={}°C, humidity={}%, co2={}",
-                        proto.getId(), climate.getTemperatureC(), climate.getHumidity(), climate.getCo2Level());
                 break;
 
-
             case SWITCH_SENSOR_EVENT:
+                log.debug("Mapping SWITCH_SENSOR_EVENT payload");
                 var switchEvent = proto.getSwitchSensorEvent();
                 var switchAvro = SwitchSensorAvro.newBuilder()
                         .setState(switchEvent.getState())
                         .build();
                 builder.setPayload(switchAvro);
-                log.debug("Mapped SWITCH_SENSOR_EVENT: id={}, state={}", proto.getId(), switchEvent.getState());
                 break;
-
 
             case PAYLOAD_NOT_SET:
             default:
-                log.warn("Unknown or unset payload case for SensorEvent: {}", proto.getPayloadCase());
+                log.warn("SensorEvent payload not set, using default payload");
+                var defaultPayload = MotionSensorAvro.newBuilder()
+                        .setLinkQuality(0)
+                        .setMotion(false)
+                        .setVoltage(0)
+                        .build();
+                builder.setPayload(defaultPayload);
                 break;
         }
 
-
-        SensorEventAvro result = builder.build();
-
-
-        if (result.getPayload() != null) {
-            log.debug("Final SensorEventAvro payload type: {}", result.getPayload().getClass().getSimpleName());
-        } else {
-            log.warn("SensorEventAvro payload is null for event id: {}", proto.getId());
-        }
-
-
+        var result = builder.build();
+        log.info("SensorEventAvro mapped: id={}, hubId={}, payloadType={}",
+                result.getId(), result.getHubId(), result.getPayload().getClass().getSimpleName());
         return result;
     }
 
     private ScenarioConditionAvro mapCondition(ScenarioConditionProto condition) {
+        log.debug("Mapping ScenarioConditionProto: sensorId={}, type={}, operation={}",
+                condition.getSensorId(), condition.getType(), condition.getOperation());
+
         var builder = ScenarioConditionAvro.newBuilder()
                 .setSensorId(condition.getSensorId())
                 .setType(mapConditionType(condition.getType()))
                 .setOperation(mapConditionOperation(condition.getOperation()));
-
 
         switch (condition.getValueCase()) {
             case INT_VALUE:
@@ -177,8 +179,9 @@ public class protoMapper {
                 break;
         }
 
-
-        return builder.build();
+        var result = builder.build();
+        log.debug("ScenarioConditionAvro mapped: {}", result);
+        return result;
     }
 
     private Instant map(Timestamp ts) {
@@ -187,70 +190,52 @@ public class protoMapper {
     }
 
     private DeviceActionAvro mapAction(DeviceActionProto action) {
+        log.debug("Mapping DeviceActionProto: sensorId={}, type={}",
+                action.getSensorId(), action.getType());
         var builder = DeviceActionAvro.newBuilder()
                 .setSensorId(action.getSensorId())
                 .setType(mapActionType(action.getType()));
-
-
         if (action.hasValue()) {
             builder.setValue(action.getValue());
         } else {
             builder.setValue(null);
         }
-
-
-        return builder.build();
+        var result = builder.build();
+        log.debug("DeviceActionAvro mapped: {}", result);
+        return result;
     }
 
     private DeviceTypeAvro mapDeviceType(DeviceTypeProto type) {
-        if (type == null) return DeviceTypeAvro.MOTION_SENSOR;
-        try {
-            return DeviceTypeAvro.valueOf(type.name());
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown device type: {}, defaulting to MOTION_SENSOR", type);
-            return DeviceTypeAvro.MOTION_SENSOR;
-        }
+        var result = (type == null) ? DeviceTypeAvro.MOTION_SENSOR : DeviceTypeAvro.valueOf(type.name());
+        log.trace("Mapped DeviceType: {} -> {}", type, result);
+        return result;
     }
 
     private List<ScenarioConditionAvro> mapConditions(List<ScenarioConditionProto> conditions) {
-        return conditions.stream()
-                .map(this::mapCondition)
-                .collect(Collectors.toList());
+        log.debug("Mapping list of ScenarioConditionProto, size={}", conditions.size());
+        return conditions.stream().map(this::mapCondition).collect(Collectors.toList());
     }
 
     private List<DeviceActionAvro> mapActions(List<DeviceActionProto> actions) {
-        return actions.stream()
-                .map(this::mapAction)
-                .collect(Collectors.toList());
+        log.debug("Mapping list of DeviceActionProto, size={}", actions.size());
+        return actions.stream().map(this::mapAction).collect(Collectors.toList());
     }
 
     private ConditionTypeAvro mapConditionType(ConditionTypeProto type) {
-        if (type == null) return ConditionTypeAvro.MOTION;
-        try {
-            return ConditionTypeAvro.valueOf(type.name());
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown condition type: {}, defaulting to MOTION", type);
-            return ConditionTypeAvro.MOTION;
-        }
+        var result = (type == null) ? ConditionTypeAvro.MOTION : ConditionTypeAvro.valueOf(type.name());
+        log.trace("Mapped ConditionType: {} -> {}", type, result);
+        return result;
     }
 
     private ConditionOperationAvro mapConditionOperation(ConditionOperationProto operation) {
-        if (operation == null) return ConditionOperationAvro.EQUALS;
-        try {
-            return ConditionOperationAvro.valueOf(operation.name());
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown condition operation: {}, defaulting to EQUALS", operation);
-            return ConditionOperationAvro.EQUALS;
-        }
+        var result = (operation == null) ? ConditionOperationAvro.EQUALS : ConditionOperationAvro.valueOf(operation.name());
+        log.trace("Mapped ConditionOperation: {} -> {}", operation, result);
+        return result;
     }
 
     private ActionTypeAvro mapActionType(ActionTypeProto type) {
-        if (type == null) return ActionTypeAvro.ACTIVATE;
-        try {
-            return ActionTypeAvro.valueOf(type.name());
-        } catch (IllegalArgumentException e) {
-            log.warn("Unknown action type: {}, defaulting to ACTIVATE", type);
-            return ActionTypeAvro.ACTIVATE;
-        }
+        var result = (type == null) ? ActionTypeAvro.ACTIVATE : ActionTypeAvro.valueOf(type.name());
+        log.trace("Mapped ActionType: {} -> {}", type, result);
+        return result;
     }
 }
