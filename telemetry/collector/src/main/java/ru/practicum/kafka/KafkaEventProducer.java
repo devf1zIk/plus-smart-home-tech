@@ -25,8 +25,7 @@ public class KafkaEventProducer {
     }
 
     public void send(String topic, String key, Instant timestamp, SpecificRecordBase value) {
-        long ts = (timestamp != null ? timestamp : Instant.now()).toEpochMilli();
-
+        long ts = timestamp.toEpochMilli();
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
                 topic,
                 null,

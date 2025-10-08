@@ -12,7 +12,7 @@ public class ProtoMapper {
     public HubEventAvro toAvro(HubEventProto proto) {
         var builder = HubEventAvro.newBuilder()
                 .setHubId(proto.getHubId())
-                .setTimestamp(mapToInstant(proto.getTimestamp()));
+                .setTimestamp(map(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
             case DEVICE_ADDED:
@@ -67,7 +67,7 @@ public class ProtoMapper {
         var builder = SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setTimestamp(mapToInstant(proto.getTimestamp()));
+                .setTimestamp(map(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
             case MOTION_SENSOR_EVENT:
@@ -152,24 +152,9 @@ public class ProtoMapper {
         return builder.build();
     }
 
-    private Instant mapToInstant(Timestamp timestamp) {
-        if (timestamp == null) {
-            return Instant.now();
-        }
-
-        long seconds = timestamp.getSeconds();
-        int nanos = timestamp.getNanos();
-
-        if (seconds == 0 && nanos == 0) {
-            return Instant.now();
-        }
-
-        long millis = seconds * 1000L + nanos / 1_000_000;
-        if (millis < 1262304000000L) {
-            return Instant.now();
-        }
-
-        return Instant.ofEpochSecond(seconds, nanos);
+    private Instant map(Timestamp ts) {
+        if (ts == null) return null;
+        return Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos());
     }
 
     private DeviceActionAvro mapAction(DeviceActionProto action) {
