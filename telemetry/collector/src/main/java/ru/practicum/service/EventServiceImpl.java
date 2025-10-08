@@ -2,14 +2,12 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Service;
-import ru.practicum.event.hub.base.HubEvent;
-import ru.practicum.event.sensor.base.SensorEvent;
 import ru.practicum.kafka.KafkaConfigProperties;
 import ru.practicum.kafka.KafkaEventProducer;
-import ru.practicum.mapper.HubEventMapper;
-import ru.practicum.mapper.SensorEventMapper;
+import ru.practicum.mapper.ProtoMapper;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 @Service
 @RequiredArgsConstructor
@@ -18,28 +16,29 @@ public class EventServiceImpl implements  EventService {
 
     private final KafkaConfigProperties kafkaProperties;
     private final KafkaEventProducer kafkaEventProducer;
+    private final ProtoMapper protoMapper;
 
-    @Override
-    public void publishSensorEvent(SensorEvent event) {
+    public void publishSensorEvent(SensorEventProto proto) {
         String topic = kafkaProperties.getSensorEventsTopic();
-        String key = event.getHubId();
-        SpecificRecordBase avroEvent = SensorEventMapper.toAvro(event);
+        String key = proto.getHubId();
 
-        log.info("Preparing to publish sensor event to Kafka | topic={} | key={} | timestamp={}",
-                topic, key, event.getTimestamp().toEpochMilli());
+        var avroEvent = protoMapper.toAvro(proto);
 
-        kafkaEventProducer.send(topic, key, event.getTimestamp(), avroEvent);
+        log.info("Publish sensor event | topic={} | key={} | sensorId={} | ts={}",
+                topic, key, proto.getId(), avroEvent.getTimestamp());
+
+        kafkaEventProducer.send(topic, key, avroEvent);
     }
 
-    @Override
-    public void publishHubEvent(HubEvent event) {
+    public void publishHubEvent(HubEventProto proto) {
         String topic = kafkaProperties.getHubEventsTopic();
-        String key = event.getHubId();
-        SpecificRecordBase avroEvent = HubEventMapper.toAvro(event);
+        String key = proto.getHubId();
 
-        log.info("Preparing to publish hub event to Kafka | topic={} | key={} | timestamp={}",
-                topic, key, event.getTimestamp().toEpochMilli());
+        var avroEvent = protoMapper.toAvro(proto);
 
-        kafkaEventProducer.send(topic, key, event.getTimestamp(), avroEvent);
+        log.info("Publish hub event | topic={} | key={} | ts={}",
+                topic, key, avroEvent.getTimestamp());
+
+        kafkaEventProducer.send(topic, key, avroEvent);
     }
 }

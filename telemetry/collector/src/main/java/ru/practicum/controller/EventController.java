@@ -1,36 +1,47 @@
 package ru.practicum.controller;
 
-import jakarta.validation.Valid;
+import com.google.protobuf.Empty;
+import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.event.hub.base.HubEvent;
+import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.service.EventService;
-import ru.practicum.event.sensor.base.SensorEvent;
+import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
-@RestController
-@Slf4j
-@RequestMapping("/events")
+@GrpcService
 @RequiredArgsConstructor
-public class EventController {
+public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
 
     private final EventService eventService;
 
-    @PostMapping(path = "/sensors", consumes = "application/json")
-    public ResponseEntity<Void> collectSensor(@Valid @RequestBody SensorEvent event) {
-        log.debug("Incoming /events/sensors: {}", event);
-        eventService.publishSensorEvent(event);
-        return ResponseEntity.accepted().build();
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            eventService.publishSensorEvent(request);
+
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription("Failed to process sensor event: " + e.getMessage())
+                    .asRuntimeException());
+        }
     }
 
-    @PostMapping(path = "/hubs", consumes = "application/json")
-    public ResponseEntity<Void> collectHub(@Valid @RequestBody HubEvent event) {
-        log.debug("Incoming /events/hubs: {}", event);
-        eventService.publishHubEvent(event);
-        return ResponseEntity.accepted().build();
+    @Override
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            eventService.publishHubEvent(request);
+
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+
+        } catch (Exception e) {
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription("Failed to process hub event: " + e.getMessage())
+                    .asRuntimeException());
+        }
     }
 }
