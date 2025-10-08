@@ -8,6 +8,7 @@ import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.ProtoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class EventServiceImpl implements  EventService {
         log.info("Publish sensor event | topic={} | key={} | sensorId={} | ts={}",
                 topic, key, proto.getId(), avroEvent.getTimestamp());
 
-        kafkaEventProducer.send(topic, key, avroEvent);
+        kafkaEventProducer.send(topic, key, Instant.now(),avroEvent);
     }
 
     public void publishHubEvent(HubEventProto proto) {
@@ -39,6 +40,6 @@ public class EventServiceImpl implements  EventService {
         log.info("Publish hub event | topic={} | key={} | ts={}",
                 topic, key, avroEvent.getTimestamp());
 
-        kafkaEventProducer.send(topic, key, avroEvent);
+        kafkaEventProducer.send(topic, key, Instant.now(),avroEvent);
     }
 }
