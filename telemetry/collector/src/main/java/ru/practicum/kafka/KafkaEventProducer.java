@@ -1,23 +1,19 @@
 package ru.practicum.kafka;
 
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Slf4j
-public class KafkaEventProducer implements AutoCloseable {
+public class KafkaEventProducer {
 
     private final KafkaProducer<String, SpecificRecordBase> producer;
-    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public KafkaEventProducer(KafkaConfigProperties kafkaConfig) {
         Properties props = new Properties();
@@ -48,22 +44,5 @@ public class KafkaEventProducer implements AutoCloseable {
                         metadata.topic(), metadata.partition(), metadata.offset(), metadata.timestamp());
             }
         });
-    }
-
-    @Override
-    public void close() {
-        if (closed.compareAndSet(false, true)) {
-            try {
-                producer.close(Duration.ofSeconds(10));
-                log.info("Kafka producer closed");
-            } catch (Exception e) {
-                log.warn("Failed to close Kafka producer cleanly", e);
-            }
-        }
-    }
-
-    @PreDestroy
-    void onShutdown() {
-        close();
     }
 }
