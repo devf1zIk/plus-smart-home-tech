@@ -1,6 +1,7 @@
 package ru.practicum.handler.sensor.type;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.handler.sensor.SensorEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
@@ -8,6 +9,7 @@ import ru.practicum.mapper.ProtoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import java.time.Instant;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ClimateSensorEventHandler implements SensorEventHandler {
@@ -24,7 +26,7 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
     public void handle(SensorEventProto event) {
         var climateData = event.getClimateSensorEvent();
 
-        System.out.printf("[Sensor] Climate event. hub=%s, sensor=%s, temp=%s°C, humidity=%s%%, co2=%s%n",
+        log.info("Обработка события климатического датчика: hubId={}, sensorId={}, temp={}°C, humidity={}%, co2={}",
                 event.getHubId(),
                 event.getId(),
                 climateData.getTemperatureC(),
@@ -32,10 +34,11 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
                 climateData.getCo2Level());
 
         var avroEvent = protoMapper.toAvro(event);
-
         String sensorEventsTopic = "telemetry.sensors.v1";
+
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(), avroEvent);
 
-        System.out.println("[DEBUG] Climate event sent to Kafka: " + sensorEventsTopic);
+        log.debug("Событие климатического датчика отправлено в Kafka: hubId={}, sensorId={}, topic={}",
+                event.getHubId(), event.getId(), sensorEventsTopic);
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.handler.sensor.type;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.handler.sensor.SensorEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
@@ -8,6 +9,7 @@ import ru.practicum.mapper.ProtoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import java.time.Instant;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LightSensorEventHandler implements SensorEventHandler {
@@ -23,11 +25,16 @@ public class LightSensorEventHandler implements SensorEventHandler {
     @Override
     public void handle(SensorEventProto event) {
         var light = event.getLightSensorEvent();
-        System.out.printf("[Sensor] Light event. hub=%s, luminosity=%s, linkQuality=%s%n",
+
+        log.info("Обработка события датчика освещенности: hubId={}, luminosity={}, linkQuality={}",
                 event.getHubId(), light.getLuminosity(), light.getLinkQuality());
 
         var avroEvent = protoMapper.toAvro(event);
         String sensorEventsTopic = "telemetry.sensors.v1";
-        kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(),avroEvent);
+
+        kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(), avroEvent);
+
+        log.debug("Событие датчика освещенности отправлено в Kafka: hubId={}, topic={}",
+                event.getHubId(), sensorEventsTopic);
     }
 }
