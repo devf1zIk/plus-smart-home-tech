@@ -7,6 +7,7 @@ import ru.practicum.handler.sensor.SensorEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.ProtoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
+import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
 import java.time.Instant;
 
 @Slf4j
@@ -24,17 +25,37 @@ public class LightSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
+        // ЖЕСТКАЯ ПРОВЕРКА: только Light события
+        if (event.getPayloadCase() != SensorEventProto.PayloadCase.LIGHT_SENSOR_EVENT) {
+            log.error("🚨 CRITICAL ERROR: LightSensorEventHandler получил НЕПРАВИЛЬНЫЙ тип: {}. Ожидался: LIGHT_SENSOR_EVENT",
+                    event.getPayloadCase());
+            return;
+        }
+
+        if (!event.hasLightSensorEvent()) {
+            log.error("🚨 CRITICAL ERROR: LightSensorEventHandler - отсутствуют light данные");
+            return;
+        }
+
         var light = event.getLightSensorEvent();
 
-        log.info("Обработка события датчика освещенности: hubId={}, luminosity={}, linkQuality={}",
+        log.info("✅ LightSensorEventHandler: Обработка Light события - hubId={}, luminosity={}, linkQuality={}",
                 event.getHubId(), light.getLuminosity(), light.getLinkQuality());
 
         var avroEvent = protoMapper.toAvro(event);
-        String sensorEventsTopic = "telemetry.sensors.v1";
 
+        // Проверка типа payload
+        Object payload = avroEvent.getPayload();
+        if (!(payload instanceof LightSensorAvro)) {
+            log.error("🚨 CRITICAL ERROR: После маппинга ожидался LightSensorAvro, но получен: {}",
+                    payload != null ? payload.getClass().getSimpleName() : "NULL");
+            return;
+        }
+
+        String sensorEventsTopic = "telemetry.sensors.v1";
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(), avroEvent);
 
-        log.debug("Событие датчика освещенности отправлено в Kafka: hubId={}, topic={}",
+        log.debug("✅ Light событие отправлено в Kafka: hubId={}, topic={}",
                 event.getHubId(), sensorEventsTopic);
     }
 }
