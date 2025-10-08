@@ -17,6 +17,7 @@ public class SwitchSensorEventHandler implements SensorEventHandler {
 
     private final KafkaEventProducer kafkaProducer;
     private final ProtoMapper protoMapper;
+    String sensorEventsTopic = "telemetry.sensors.v1";
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -46,7 +47,6 @@ public class SwitchSensorEventHandler implements SensorEventHandler {
             return;
         }
 
-        String sensorEventsTopic = "telemetry.sensors.v1";
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(), avroEvent);
 
         log.info("✅ Switch событие отправлено в Kafka");

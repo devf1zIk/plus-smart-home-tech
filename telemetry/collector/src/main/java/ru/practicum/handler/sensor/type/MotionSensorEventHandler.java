@@ -17,6 +17,7 @@ public class MotionSensorEventHandler implements SensorEventHandler {
 
     private final KafkaEventProducer kafkaProducer;
     private final ProtoMapper protoMapper;
+    String sensorEventsTopic = "telemetry.sensors.v1";
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -46,7 +47,6 @@ public class MotionSensorEventHandler implements SensorEventHandler {
             return;
         }
 
-        String sensorEventsTopic = "telemetry.sensors.v1";
         kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(), avroEvent);
 
         log.info("✅ Motion событие отправлено в Kafka");
