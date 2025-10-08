@@ -6,7 +6,6 @@ import ru.practicum.handler.sensor.SensorEventHandler;
 import ru.practicum.kafka.KafkaEventProducer;
 import ru.practicum.mapper.protoMapper;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +26,6 @@ public class TemperatureSensorEventHandler implements SensorEventHandler {
 
         var avroEvent = protoMapper.toAvro(event);
         String sensorEventsTopic = "telemetry.sensors.v1";
-        kafkaProducer.send(sensorEventsTopic, event.getHubId(), Instant.now(),avroEvent);
+        kafkaProducer.send(sensorEventsTopic, event.getHubId(), avroEvent.getTimestamp(),avroEvent);
     }
 }
