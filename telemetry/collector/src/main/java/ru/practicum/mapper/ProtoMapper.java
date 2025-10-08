@@ -70,7 +70,7 @@ public class ProtoMapper {
                 .setTimestamp(mapToInstant(proto.getTimestamp()));
 
         switch (proto.getPayloadCase()) {
-            case MOTION_SENSOR_EVENT -> {
+            case MOTION_SENSOR_EVENT:
                 var motion = proto.getMotionSensorEvent();
                 var motionAvro = MotionSensorAvro.newBuilder()
                         .setLinkQuality(motion.getLinkQuality())
@@ -78,24 +78,27 @@ public class ProtoMapper {
                         .setVoltage(motion.getVoltage())
                         .build();
                 builder.setPayload(motionAvro);
-            }
-            case TEMPERATURE_SENSOR_EVENT -> {
+                break;
+
+            case TEMPERATURE_SENSOR_EVENT:
                 var temp = proto.getTemperatureSensorEvent();
                 var tempAvro = TemperatureSensorAvro.newBuilder()
                         .setTemperatureC(temp.getTemperatureC())
                         .setTemperatureF(temp.getTemperatureF())
                         .build();
                 builder.setPayload(tempAvro);
-            }
-            case LIGHT_SENSOR_EVENT -> {
+                break;
+
+            case LIGHT_SENSOR_EVENT:
                 var light = proto.getLightSensorEvent();
                 var lightAvro = LightSensorAvro.newBuilder()
                         .setLinkQuality(light.getLinkQuality())
                         .setLuminosity(light.getLuminosity())
                         .build();
                 builder.setPayload(lightAvro);
-            }
-            case CLIMATE_SENSOR_EVENT -> {
+                break;
+
+            case CLIMATE_SENSOR_EVENT:
                 var climate = proto.getClimateSensorEvent();
                 var climateAvro = ClimateSensorAvro.newBuilder()
                         .setTemperatureC(climate.getTemperatureC())
@@ -103,22 +106,25 @@ public class ProtoMapper {
                         .setCo2Level(climate.getCo2Level())
                         .build();
                 builder.setPayload(climateAvro);
-            }
-            case SWITCH_SENSOR_EVENT -> {
+                break;
+
+            case SWITCH_SENSOR_EVENT:
                 var switchEvent = proto.getSwitchSensorEvent();
                 var switchAvro = SwitchSensorAvro.newBuilder()
                         .setState(switchEvent.getState())
                         .build();
                 builder.setPayload(switchAvro);
-            }
-            default -> {
+                break;
+
+            case PAYLOAD_NOT_SET:
+            default:
                 var defaultPayload = MotionSensorAvro.newBuilder()
                         .setLinkQuality(0)
                         .setMotion(false)
                         .setVoltage(0)
                         .build();
                 builder.setPayload(defaultPayload);
-            }
+                break;
         }
 
         return builder.build();
