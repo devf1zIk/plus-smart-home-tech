@@ -2,14 +2,13 @@ syntax = "proto3";
 
 package telemetry.message.event;
 
-import "google/protobuf/timestamp.proto";
-
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
-option java_outer_classname = "HubEvent";
+
+import "google/protobuf/timestamp.proto";
 
 message HubEventProto {
-  string hub_id = 1;
+  string hubId = 1;
   google.protobuf.Timestamp timestamp = 2;
   oneof payload {
     DeviceAddedEventProto device_added = 3;
@@ -19,14 +18,6 @@ message HubEventProto {
   }
 }
 
-enum DeviceTypeProto {
-  MOTION_SENSOR = 0;
-  TEMPERATURE_SENSOR = 1;
-  LIGHT_SENSOR = 2;
-  CLIMATE_SENSOR = 3;
-  SWITCH_SENSOR = 4;
-}
-
 message DeviceAddedEventProto {
   string id = 1;
   DeviceTypeProto type = 2;
@@ -34,6 +25,40 @@ message DeviceAddedEventProto {
 
 message DeviceRemovedEventProto {
   string id = 1;
+}
+
+message ScenarioConditionProto {
+  string sensor_id = 1;
+  ConditionTypeProto type = 2;
+  ConditionOperationProto operation = 3;
+  oneof value {
+    bool bool_value = 4;
+    int32 int_value = 5;
+  }
+}
+
+message DeviceActionProto {
+  string sensor_id = 1;
+  ActionTypeProto type = 2;
+  optional int32 value = 3;
+}
+
+message ScenarioAddedEventProto {
+  string name = 1;
+  repeated ScenarioConditionProto condition = 2;
+  repeated DeviceActionProto action = 3;
+}
+
+message ScenarioRemovedEventProto {
+  string name = 1;
+}
+
+enum DeviceTypeProto {
+  MOTION_SENSOR = 0;
+  TEMPERATURE_SENSOR = 1;
+  LIGHT_SENSOR = 2;
+  CLIMATE_SENSOR = 3;
+  SWITCH_SENSOR = 4;
 }
 
 enum ConditionTypeProto {
@@ -51,35 +76,9 @@ enum ConditionOperationProto {
   LOWER_THAN = 2;
 }
 
-message ScenarioConditionProto {
-  string sensor_id = 1;
-  ConditionTypeProto type = 2;
-  ConditionOperationProto operation = 3;
-  oneof value {
-    bool bool_value = 4;
-    int32 int_value = 5;
-  }
-}
-
 enum ActionTypeProto {
   ACTIVATE = 0;
   DEACTIVATE = 1;
   INVERSE = 2;
   SET_VALUE = 3;
-}
-
-message DeviceActionProto {
-  string sensor_id = 1;
-  ActionTypeProto type = 2;
-  optional int32 value = 3;
-}
-
-message ScenarioAddedEventProto {
-  string name = 1;
-  repeated ScenarioConditionProto condition = 2;
-  repeated DeviceActionProto action = 3;
-}
-
-message ScenarioRemovedEventProto {
-  string name = 1;
 }
