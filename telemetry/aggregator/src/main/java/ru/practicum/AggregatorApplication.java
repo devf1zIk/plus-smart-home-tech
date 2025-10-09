@@ -14,6 +14,7 @@ public class AggregatorApplication {
         ConfigurableApplicationContext context = SpringApplication.run(AggregatorApplication.class, args);
         AggregationStart aggregationStarter = context.getBean(AggregationStart.class);
         aggregationStarter.start();
+        //proverka
     }
 
 }
