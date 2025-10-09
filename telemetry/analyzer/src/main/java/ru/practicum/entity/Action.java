@@ -16,7 +16,6 @@ public class Action {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
     String type;
 
     Integer value;
