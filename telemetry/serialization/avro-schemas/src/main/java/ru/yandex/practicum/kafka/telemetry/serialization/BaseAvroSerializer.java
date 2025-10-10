@@ -11,25 +11,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class BaseAvroSerializer<T extends GenericRecord> implements Serializer<T> {
+
     @Override
     public byte[] serialize(String topic, T data) {
-
-        final EncoderFactory encoderFactory = EncoderFactory.get();
-        BinaryEncoder encoder;
+        if (data == null) return null;
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            byte[] result = null;
-            encoder = encoderFactory.binaryEncoder(out, null);
-            if (data != null) {
-                DatumWriter<T> writer = new SpecificDatumWriter<>(data.getSchema());
-                writer.write(data, encoder);
-                encoder.flush();
-                result = out.toByteArray();
-            }
-            return result;
+            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(out, null);
+            DatumWriter<T> writer = new SpecificDatumWriter<>(data.getSchema());
+            writer.write(data, encoder);
+            encoder.flush();
+            return out.toByteArray();
         } catch (IOException ex) {
-            throw new SerializationException("Serialization error ", ex);
+            throw new SerializationException("Ошибка сериализации Avro данных", ex);
         }
-
     }
 }
