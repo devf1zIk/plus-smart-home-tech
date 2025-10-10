@@ -9,17 +9,11 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.entity.Scenario;
-import ru.practicum.entity.ScenarioAction;
-import ru.practicum.entity.ScenarioActionId;
-import ru.practicum.entity.ScenarioCondition;
-import ru.practicum.entity.ScenarioConditionId;
-import ru.practicum.repository.ActionRepository;
-import ru.practicum.repository.ConditionRepository;
+import ru.practicum.entity.Sensor;
 import ru.practicum.repository.ScenarioRepository;
 import ru.practicum.repository.SensorRepository;
+import ru.practicum.service.ScenarioService;
 import ru.yandex.practicum.kafka.telemetry.event.*;
-import ru.practicum.entity.*;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -29,10 +23,9 @@ import java.util.Properties;
 @RequiredArgsConstructor
 public class HubEventProcessor implements Runnable {
 
+    private final ScenarioService scenarioService;
     private final SensorRepository sensorRepository;
     private final ScenarioRepository scenarioRepository;
-    private final ConditionRepository conditionRepository;
-    private final ActionRepository actionRepository;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -111,67 +104,13 @@ public class HubEventProcessor implements Runnable {
     private void handleScenarioAdded(HubEventAvro event) {
         ScenarioAddedEventAvro payload = (ScenarioAddedEventAvro) event.getPayload();
         String hubId = event.getHubId();
-        String name = payload.getName();
 
-        Scenario scenario = scenarioRepository.findByHubIdAndName(hubId, name)
-                .orElseGet(() -> Scenario.builder()
-                        .hubId(hubId)
-                        .name(name)
-                        .build());
-
-        scenarioRepository.save(scenario);
-
-        scenario.getConditions().clear();
-        scenario.getActions().clear();
-
-        payload.getConditions().forEach(cond -> {
-            Integer value = null;
-
-            Object rawValue = cond.getValue();
-            if (rawValue instanceof Integer i) {
-                value = i;
-            } else if (rawValue instanceof Boolean b) {
-                value = b ? 1 : 0;
-            }
-
-            Condition condition = conditionRepository.save(Condition.builder()
-                    .type(cond.getType().name())
-                    .operation(cond.getOperation().name())
-                    .value(value)
-                    .build());
-
-            sensorRepository.findByIdAndHubId(cond.getSensorId(), hubId).ifPresent(sensor -> {
-                ScenarioCondition sc = ScenarioCondition.builder()
-                        .id(new ScenarioConditionId(scenario.getId(), sensor.getId(), condition.getId()))
-                        .scenario(scenario)
-                        .sensor(sensor)
-                        .condition(condition)
-                        .build();
-                scenario.getConditions().add(sc);
-            });
-        });
-
-        payload.getActions().forEach(act -> {
-            Action action = actionRepository.save(Action.builder()
-                    .type(act.getType().name())
-                    .value(act.getValue() != null ? act.getValue() : null)
-                    .build());
-
-            sensorRepository.findByIdAndHubId(act.getSensorId(), hubId).ifPresent(sensor -> {
-                ScenarioAction sa = ScenarioAction.builder()
-                        .id(new ScenarioActionId(scenario.getId(), sensor.getId(), action.getId()))
-                        .scenario(scenario)
-                        .sensor(sensor)
-                        .action(action)
-                        .build();
-                scenario.getActions().add(sa);
-            });
-        });
-
-        scenarioRepository.save(scenario);
-
-        log.info("Добавлен сценарий {} для хаба {} ({} условий, {} действий)",
-                name, hubId, payload.getConditions().size(), payload.getActions().size());
+        try {
+            scenarioService.upsertScenarioFromEvent(payload, hubId);
+            log.info("Обработано ScenarioAdded для hub={}, name={}", hubId, payload.getName());
+        } catch (Exception e) {
+            log.error("Ошибка при обработке ScenarioAdded для hub={}, name={}: {}", hubId, payload.getName(), e.toString(), e);
+        }
     }
 
     private void handleScenarioRemoved(HubEventAvro event) {
