@@ -73,7 +73,7 @@ public class ScenarioService {
                     operation = ConditionOperation.valueOf(cond.getOperation().name());
                 } catch (Exception e) {
                     log.error("Не удалось распарсить тип/операцию для условия: {}, пропускаю. error={}",
-                            cond, e.toString(), e);
+                            cond, e, e);
                     continue;
                 }
 
