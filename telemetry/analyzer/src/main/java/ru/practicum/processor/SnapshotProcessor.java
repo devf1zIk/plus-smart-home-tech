@@ -65,7 +65,12 @@ public class SnapshotProcessor {
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     SensorsSnapshotAvro snapshot = record.value();
-                    processSnapshot(snapshot);
+                    if (snapshot == null) {
+                        log.warn("Пропущен null snapshot");
+                        continue;
+                    }
+                    Instant eventInstant = Instant.ofEpochMilli(record.timestamp());
+                    processSnapshot(snapshot, eventInstant);
                 }
 
                 consumer.commitAsync();
@@ -76,7 +81,7 @@ public class SnapshotProcessor {
         }
     }
 
-    private void processSnapshot(SensorsSnapshotAvro snapshot) {
+    private void processSnapshot(SensorsSnapshotAvro snapshot,Instant timestamp) {
         String hubId = snapshot.getHubId();
         log.debug("Обработка снапшота хаба {}", hubId);
 
@@ -91,7 +96,7 @@ public class SnapshotProcessor {
 
             if (conditionsMet) {
                 log.info("Условия сценария '{}' выполнены. Отправляем действия...", scenario.getName());
-                executeScenarioActions(hubId,now,scenario);
+                executeScenarioActions(hubId,timestamp,scenario);
             } else {
                 log.debug("Условия сценария '{}' не выполнены.", scenario.getName());
             }
@@ -148,10 +153,8 @@ public class SnapshotProcessor {
         };
     }
 
-    Instant now = Instant.now();
 
     private void executeScenarioActions(String hubId,Instant timestamp,Scenario scenario) {
-        long ts = timestamp.toEpochMilli();
 
         for (ScenarioAction sa : scenario.getActions()) {
             Action action = sa.getAction();
@@ -186,7 +189,7 @@ public class SnapshotProcessor {
             try {
                 Empty resp = hubRouterClient.handleDeviceAction(request);
                 log.debug("HubRouter response: {}", resp);
-                log.info("Выполнено действие {} для сенсора {} (hubId={})", type, safeValue, hubId);
+                log.info("Выполнено действие {} для сенсора {} (hubId={})", action.getType(), safeValue, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
             } catch (Throwable t) {
