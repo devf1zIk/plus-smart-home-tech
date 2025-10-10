@@ -26,7 +26,7 @@ spring:
     consumer:
       group-id: analyzer-snapshots-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.yandex.practicum.kafka.telemetry.deserialization.SensorsSnapshotDeserializer
+      value-deserializer: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
       properties:
         specific.avro.reader: true
       enable-auto-commit: false
