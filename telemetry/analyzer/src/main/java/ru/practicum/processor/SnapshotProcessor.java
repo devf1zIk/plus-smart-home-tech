@@ -1,8 +1,8 @@
 package ru.practicum.processor;
 
+import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import io.grpc.StatusRuntimeException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -18,7 +18,7 @@ import ru.practicum.enums.ConditionOperation;
 import ru.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
-import ru.yandex.practicum.grpc.telemetry.hubrouter.DeviceActionRequest;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc.HubRouterControllerBlockingStub;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import java.time.Duration;
@@ -29,19 +29,22 @@ import java.util.Properties;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class SnapshotProcessor {
 
     private final ScenarioRepository scenarioRepository;
-
-    @GrpcClient("hub-router")
-    private HubRouterControllerBlockingStub hubRouterClient;
+    private final HubRouterControllerBlockingStub hubRouterClient;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Value("${analyzer.topics.snapshots}")
     private String snapshotsTopic;
+
+    public SnapshotProcessor(ScenarioRepository scenarioRepository,
+                             @GrpcClient("hub-router") HubRouterControllerBlockingStub hubRouterClient) {
+        this.scenarioRepository = scenarioRepository;
+        this.hubRouterClient = hubRouterClient;
+    }
 
     public void start() {
         log.info("Запуск SnapshotProcessor. Подписка на топик: {}", snapshotsTopic);
@@ -179,10 +182,13 @@ public class SnapshotProcessor {
                     .build();
 
             try {
-                hubRouterClient.handleDeviceAction(request);
+                Empty resp = hubRouterClient.handleDeviceAction(request);
+                log.debug("HubRouter response: {}", resp);
                 log.info("Выполнено действие {} для сенсора {} (hubId={})", type, safeValue, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
+            } catch (Throwable t) {
+                log.error("Неожиданная ошибка при вызове gRPC HubRouter", t);
             }
         }
     }

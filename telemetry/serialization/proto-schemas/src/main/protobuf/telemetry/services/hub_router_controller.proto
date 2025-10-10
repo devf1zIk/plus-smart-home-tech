@@ -11,14 +11,6 @@ option java_package = "ru.yandex.practicum.grpc.telemetry.hubrouter";
 option java_outer_classname = "HubRouterControllerProto";
 
 service HubRouterController {
-  rpc handleDeviceAction(DeviceActionRequest)
+  rpc handleDeviceAction(telemetry.message.event.DeviceActionRequest)
       returns (google.protobuf.Empty);
-}
-
-message DeviceActionRequest {
-  string hub_id = 1;
-  string scenario_name = 2;
-  telemetry.message.event.DeviceActionProto action = 3;
-  google.protobuf.Timestamp timestamp = 4;
-
 }
