@@ -52,7 +52,7 @@ public class SnapshotProcessor {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "analyzer-snapshots-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.telemetry.deserialization.SensorsSnapshotDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
@@ -182,7 +182,7 @@ public class SnapshotProcessor {
             try {
                 hubRouterClient.handleDeviceAction(request);
                 log.info("Выполнено действие {} для сенсора {} (hubId={})",
-                        action.getType(), safeValue, hubId);
+                        action.getType(), sensorId, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
             }
