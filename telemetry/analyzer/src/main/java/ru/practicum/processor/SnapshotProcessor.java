@@ -12,11 +12,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.entity.Action;
-import ru.practicum.entity.Condition;
-import ru.practicum.entity.ScenarioAction;
-import ru.practicum.entity.ScenarioCondition;
-import ru.practicum.entity.Scenario;
+import ru.practicum.entity.*;
+import ru.practicum.enums.ActionType;
+import ru.practicum.enums.ConditionOperation;
 import ru.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
@@ -120,7 +118,7 @@ public class SnapshotProcessor {
     }
 
     private boolean evaluateCondition(Condition condition, Object data) {
-        String operation = condition.getOperation();
+        ConditionOperation operation = condition.getOperation();
         Integer expected = condition.getValue();
         if (expected == null) return false;
 
@@ -139,12 +137,11 @@ public class SnapshotProcessor {
         return false;
     }
 
-    private boolean compare(int sensorValue, int expected, String operation) {
+    private boolean compare(int sensorValue, int expected, ConditionOperation operation) {
         return switch (operation) {
-            case "GREATER_THAN" -> sensorValue > expected;
-            case "LOWER_THAN" -> sensorValue < expected;
-            case "EQUALS" -> sensorValue == expected;
-            default -> false;
+            case GREATER_THAN -> sensorValue > expected;
+            case LOWER_THAN -> sensorValue < expected;
+            case EQUALS -> sensorValue == expected;
         };
     }
 
@@ -154,18 +151,20 @@ public class SnapshotProcessor {
         for (ScenarioAction sa : scenario.getActions()) {
             Action action = sa.getAction();
             String sensorId = sa.getSensor().getId();
+            ActionType type = action.getType();
 
-            Integer rawValue = action.getValue();
-            int safeValue = (rawValue != null) ? rawValue : 0;
+            int safeValue = (action.getValue() != null) ? action.getValue() : 0;
 
-            if (rawValue == null) {
+            if (action.getValue() == null) {
                 log.debug("Действие {} для сенсора {} не содержит value, подставлено 0",
-                        action.getType(), sensorId);
+                        type, sensorId);
             }
 
+            ActionTypeProto protoType = ActionTypeProto.valueOf(type.name());
+
             DeviceActionProto grpcAction = DeviceActionProto.newBuilder()
-                    .setSensorId((sensorId))
-                    .setType(ActionTypeProto.valueOf(action.getType()))
+                    .setSensorId(sensorId)
+                    .setType(protoType)
                     .setValue(safeValue)
                     .build();
 
@@ -181,8 +180,7 @@ public class SnapshotProcessor {
 
             try {
                 hubRouterClient.handleDeviceAction(request);
-                log.info("Выполнено действие {} для сенсора {} (hubId={})",
-                        action.getType(), safeValue, hubId);
+                log.info("Выполнено действие {} для сенсора {} (hubId={})", type, safeValue, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
             }

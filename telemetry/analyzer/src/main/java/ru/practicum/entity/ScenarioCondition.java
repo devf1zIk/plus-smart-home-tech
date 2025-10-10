@@ -1,7 +1,19 @@
 package ru.practicum.entity;
 
-import lombok.*;
-import jakarta.persistence.*;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "scenario_conditions")
@@ -10,23 +22,26 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScenarioCondition {
-
     @EmbeddedId
     ScenarioConditionId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("scenarioId")
     @JoinColumn(name = "scenario_id")
+    @NotNull
     Scenario scenario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("sensorId")
     @JoinColumn(name = "sensor_id")
+    @NotNull
     Sensor sensor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("conditionId")
     @JoinColumn(name = "condition_id")
+    @NotNull
     Condition condition;
 }

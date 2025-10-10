@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.entity.*;
+import ru.practicum.enums.ActionType;
+import ru.practicum.enums.ConditionOperation;
+import ru.practicum.enums.ConditionType;
 import ru.practicum.repository.*;
 
 @Service
@@ -34,11 +37,16 @@ public class ScenarioService {
             if (rawValue instanceof Integer i) value = i;
             else if (rawValue instanceof Boolean b) value = b ? 1 : 0;
 
-            Condition condition = conditionRepository.save(Condition.builder()
-                    .type(cond.getType().name())
-                    .operation(cond.getOperation().name())
-                    .value(value)
-                    .build());
+            ConditionType type = ConditionType.valueOf(cond.getType().name());
+            ConditionOperation operation = ConditionOperation.valueOf(cond.getOperation().name());
+
+            Condition condition = conditionRepository.save(
+                    Condition.builder()
+                            .type(type)
+                            .operation(operation)
+                            .value(value)
+                            .build()
+            );
 
             Scenario finalScenario1 = scenario;
             sensorRepository.findByIdAndHubId(cond.getSensorId(), hubId).ifPresent(sensor -> {
@@ -53,10 +61,13 @@ public class ScenarioService {
         }
 
         for (var act : payload.getActions()) {
-            Action action = actionRepository.save(Action.builder()
-                    .type(act.getType().name())
-                    .value(act.getValue() != null ? act.getValue() : null)
-                    .build());
+            ActionType type = ActionType.valueOf(act.getType().name());
+            Action action = actionRepository.save(
+                    Action.builder()
+                            .type(type)
+                            .value(act.getValue() != null ? act.getValue() : null)
+                            .build()
+            );
 
             Scenario finalScenario = scenario;
             sensorRepository.findByIdAndHubId(act.getSensorId(), hubId).ifPresent(sensor -> {
