@@ -91,7 +91,7 @@ public class SnapshotProcessor {
 
             if (conditionsMet) {
                 log.info("Условия сценария '{}' выполнены. Отправляем действия...", scenario.getName());
-                executeScenarioActions(hubId, scenario);
+                executeScenarioActions(hubId,now,scenario);
             } else {
                 log.debug("Условия сценария '{}' не выполнены.", scenario.getName());
             }
@@ -148,8 +148,10 @@ public class SnapshotProcessor {
         };
     }
 
-    private void executeScenarioActions(String hubId, Scenario scenario) {
-        Instant now = Instant.now();
+    Instant now = Instant.now();
+
+    private void executeScenarioActions(String hubId,Instant timestamp,Scenario scenario) {
+        long ts = timestamp.toEpochMilli();
 
         for (ScenarioAction sa : scenario.getActions()) {
             Action action = sa.getAction();
@@ -176,8 +178,8 @@ public class SnapshotProcessor {
                     .setScenarioName(scenario.getName())
                     .setAction(grpcAction)
                     .setTimestamp(Timestamp.newBuilder()
-                            .setSeconds(now.getEpochSecond())
-                            .setNanos(now.getNano())
+                            .setSeconds(timestamp.getEpochSecond())
+                            .setNanos(timestamp.getNano())
                             .build())
                     .build();
 
