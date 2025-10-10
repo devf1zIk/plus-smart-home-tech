@@ -21,5 +21,5 @@ logging:
 
 grpc:
   server:
-    port: 59091
+    port: 59090
     reflection-service-enabled: true
