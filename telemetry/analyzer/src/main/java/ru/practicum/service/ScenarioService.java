@@ -9,6 +9,7 @@ import ru.practicum.enums.ActionType;
 import ru.practicum.enums.ConditionOperation;
 import ru.practicum.enums.ConditionType;
 import ru.practicum.repository.*;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ public class ScenarioService {
 
 
     @Transactional
-    public void upsertScenarioFromEvent(ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro payload,
+    public void upsertScenarioFromEvent(ScenarioAddedEventAvro payload,
                                         String hubId) {
         Objects.requireNonNull(payload, "payload must not be null");
         Objects.requireNonNull(hubId, "hubId must not be null");
