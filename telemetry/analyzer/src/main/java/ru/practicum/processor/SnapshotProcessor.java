@@ -1,8 +1,8 @@
 package ru.practicum.processor;
 
-import com.google.protobuf.Empty;
 import com.google.protobuf.Timestamp;
 import io.grpc.StatusRuntimeException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -12,13 +12,15 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.entity.*;
-import ru.practicum.enums.ActionType;
-import ru.practicum.enums.ConditionOperation;
+import ru.practicum.entity.Action;
+import ru.practicum.entity.Condition;
+import ru.practicum.entity.ScenarioAction;
+import ru.practicum.entity.ScenarioCondition;
+import ru.practicum.entity.Scenario;
 import ru.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
-import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
+import ru.yandex.practicum.grpc.telemetry.hubrouter.DeviceActionRequest;
 import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc.HubRouterControllerBlockingStub;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 import java.time.Duration;
@@ -29,22 +31,19 @@ import java.util.Properties;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SnapshotProcessor {
 
     private final ScenarioRepository scenarioRepository;
-    private final HubRouterControllerBlockingStub hubRouterClient;
+
+    @GrpcClient("hub-router")
+    private HubRouterControllerBlockingStub hubRouterClient;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Value("${analyzer.topics.snapshots}")
     private String snapshotsTopic;
-
-    public SnapshotProcessor(ScenarioRepository scenarioRepository,
-                             @GrpcClient("hub-router") HubRouterControllerBlockingStub hubRouterClient) {
-        this.scenarioRepository = scenarioRepository;
-        this.hubRouterClient = hubRouterClient;
-    }
 
     public void start() {
         log.info("Запуск SnapshotProcessor. Подписка на топик: {}", snapshotsTopic);
@@ -53,7 +52,7 @@ public class SnapshotProcessor {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "analyzer-snapshots-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "ru.yandex.practicum.kafka.telemetry.deserialization.SensorsSnapshotDeserializer");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
@@ -65,12 +64,7 @@ public class SnapshotProcessor {
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     SensorsSnapshotAvro snapshot = record.value();
-                    if (snapshot == null) {
-                        log.warn("Пропущен null snapshot");
-                        continue;
-                    }
-                    Instant eventInstant = Instant.ofEpochMilli(record.timestamp());
-                    processSnapshot(snapshot, eventInstant);
+                    processSnapshot(snapshot);
                 }
 
                 consumer.commitAsync();
@@ -81,7 +75,7 @@ public class SnapshotProcessor {
         }
     }
 
-    private void processSnapshot(SensorsSnapshotAvro snapshot,Instant timestamp) {
+    private void processSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
         log.debug("Обработка снапшота хаба {}", hubId);
 
@@ -96,7 +90,7 @@ public class SnapshotProcessor {
 
             if (conditionsMet) {
                 log.info("Условия сценария '{}' выполнены. Отправляем действия...", scenario.getName());
-                executeScenarioActions(hubId,timestamp,scenario);
+                executeScenarioActions(hubId, scenario);
             } else {
                 log.debug("Условия сценария '{}' не выполнены.", scenario.getName());
             }
@@ -126,7 +120,7 @@ public class SnapshotProcessor {
     }
 
     private boolean evaluateCondition(Condition condition, Object data) {
-        ConditionOperation operation = condition.getOperation();
+        String operation = condition.getOperation();
         Integer expected = condition.getValue();
         if (expected == null) return false;
 
@@ -145,34 +139,33 @@ public class SnapshotProcessor {
         return false;
     }
 
-    private boolean compare(int sensorValue, int expected, ConditionOperation operation) {
+    private boolean compare(int sensorValue, int expected, String operation) {
         return switch (operation) {
-            case GREATER_THAN -> sensorValue > expected;
-            case LOWER_THAN -> sensorValue < expected;
-            case EQUALS -> sensorValue == expected;
+            case "GREATER_THAN" -> sensorValue > expected;
+            case "LOWER_THAN" -> sensorValue < expected;
+            case "EQUALS" -> sensorValue == expected;
+            default -> false;
         };
     }
 
-
-    private void executeScenarioActions(String hubId,Instant timestamp,Scenario scenario) {
+    private void executeScenarioActions(String hubId, Scenario scenario) {
+        Instant now = Instant.now();
 
         for (ScenarioAction sa : scenario.getActions()) {
             Action action = sa.getAction();
             String sensorId = sa.getSensor().getId();
-            ActionType type = action.getType();
 
-            int safeValue = (action.getValue() != null) ? action.getValue() : 0;
+            Integer rawValue = action.getValue();
+            int safeValue = (rawValue != null) ? rawValue : 0;
 
-            if (action.getValue() == null) {
+            if (rawValue == null) {
                 log.debug("Действие {} для сенсора {} не содержит value, подставлено 0",
-                        type, sensorId);
+                        action.getType(), sensorId);
             }
 
-            ActionTypeProto protoType = ActionTypeProto.valueOf(type.name());
-
             DeviceActionProto grpcAction = DeviceActionProto.newBuilder()
-                    .setSensorId(sensorId)
-                    .setType(protoType)
+                    .setSensorId((sensorId))
+                    .setType(ActionTypeProto.valueOf(action.getType()))
                     .setValue(safeValue)
                     .build();
 
@@ -181,19 +174,17 @@ public class SnapshotProcessor {
                     .setScenarioName(scenario.getName())
                     .setAction(grpcAction)
                     .setTimestamp(Timestamp.newBuilder()
-                            .setSeconds(timestamp.getEpochSecond())
-                            .setNanos(timestamp.getNano())
+                            .setSeconds(now.getEpochSecond())
+                            .setNanos(now.getNano())
                             .build())
                     .build();
 
             try {
-                Empty resp = hubRouterClient.handleDeviceAction(request);
-                log.debug("HubRouter response: {}", resp);
-                log.info("Выполнено действие {} для сенсора {} (hubId={})", action.getType(), safeValue, hubId);
+                hubRouterClient.handleDeviceAction(request);
+                log.info("Выполнено действие {} для сенсора {} (hubId={})",
+                        action.getType(), safeValue, hubId);
             } catch (StatusRuntimeException e) {
                 log.error("Ошибка при вызове gRPC HubRouter: {}", e.getStatus(), e);
-            } catch (Throwable t) {
-                log.error("Неожиданная ошибка при вызове gRPC HubRouter", t);
             }
         }
     }

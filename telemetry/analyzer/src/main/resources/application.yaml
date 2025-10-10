@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/smarthome
     username: postgres
-    password: password
+    password: karakesek
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -26,7 +26,7 @@ spring:
     consumer:
       group-id: analyzer-snapshots-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
+      value-deserializer: ru.yandex.practicum.kafka.telemetry.deserialization.SensorsSnapshotDeserializer
       properties:
         specific.avro.reader: true
       enable-auto-commit: false
