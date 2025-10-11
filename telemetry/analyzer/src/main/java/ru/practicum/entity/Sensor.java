@@ -1,20 +1,30 @@
 package ru.practicum.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "sensors")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = PRIVATE)
 public class Sensor {
 
     @Id
-    private String id;
+    @Column(name = "id")
+    String id;
 
     @Column(name = "hub_id", nullable = false)
-    private String hubId;
+    String hubId;
 }

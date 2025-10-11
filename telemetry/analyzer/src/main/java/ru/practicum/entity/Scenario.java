@@ -1,34 +1,53 @@
 package ru.practicum.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.util.HashSet;
-import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static lombok.AccessLevel.PRIVATE;
 
 @Entity
-@Table(name = "scenarios", uniqueConstraints = @UniqueConstraint(columnNames = {"hub_id", "name"}))
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(name = "scenarios", uniqueConstraints = @UniqueConstraint(columnNames = {"hub_id", "name"}))
+@FieldDefaults(level = PRIVATE)
 public class Scenario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @Column(name = "hub_id", nullable = false)
-    private String hubId;
+    String hubId;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "name", nullable = false)
+    String name;
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(table = "scenario_conditions", name = "sensor_id")
+    @JoinTable(
+            name = "scenario_conditions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "condition_id")
+    )
     @Builder.Default
-    private Set<ScenarioCondition> conditions = new HashSet<>();
+    Map<String, Condition> conditions = new HashMap<>();
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(table = "scenario_actions", name = "sensor_id")
+    @JoinTable(
+            name = "scenario_actions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "action_id")
+    )
     @Builder.Default
-    private Set<ScenarioAction> actions = new HashSet<>();
+    Map<String, Action> actions = new HashMap<>();
 }

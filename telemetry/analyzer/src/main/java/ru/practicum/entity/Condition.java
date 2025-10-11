@@ -1,30 +1,37 @@
 package ru.practicum.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import ru.practicum.enums.ConditionType;
-import ru.practicum.enums.ConditionOperation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
+
+import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "conditions")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = PRIVATE)
 public class Condition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ConditionType type;
+    @Column(name = "type")
+    ConditionTypeAvro type;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ConditionOperation operation;
+    @Column(name = "operation")
+    ConditionOperationAvro operation;
 
-    private Integer value;
+    @Column(name = "condition_value")
+    Integer value;
 }

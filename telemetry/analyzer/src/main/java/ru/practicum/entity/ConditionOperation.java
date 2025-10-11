@@ -1,4 +1,4 @@
-package ru.practicum.enums;
+package ru.practicum.entity;
 
 public enum ConditionOperation {
     EQUALS,

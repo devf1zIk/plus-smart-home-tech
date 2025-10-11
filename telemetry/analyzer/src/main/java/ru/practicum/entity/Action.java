@@ -1,25 +1,32 @@
 package ru.practicum.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import ru.practicum.enums.ActionType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+
+import static lombok.AccessLevel.PRIVATE;
 
 @Entity
 @Table(name = "actions")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = PRIVATE)
 public class Action {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ActionType type;
+    @Column(name = "type")
+    ActionTypeAvro type;
 
-    private Integer value;
+    @Column(name = "action_value")
+    Integer value;
 }
