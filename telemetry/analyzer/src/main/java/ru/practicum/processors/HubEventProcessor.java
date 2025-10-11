@@ -69,20 +69,12 @@ public class HubEventProcessor implements Runnable {
 
         SpecificRecordBase payload = (SpecificRecordBase) hubEvent.getPayload();
 
-        if (payload instanceof DeviceAddedEventAvro) {
-            DeviceAddedEventAvro deviceAddedEvent = (DeviceAddedEventAvro) payload;
-            handleWithEvent(deviceAddedEvent, hubEvent);
-        } else if (payload instanceof DeviceRemovedEventAvro) {
-            DeviceRemovedEventAvro deviceRemovedEvent = (DeviceRemovedEventAvro) payload;
-            handleWithEvent(deviceRemovedEvent, hubEvent);
-        } else if (payload instanceof ScenarioAddedEventAvro) {
-            ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) payload;
-            handleWithEvent(scenarioAddedEvent, hubEvent);
-        } else if (payload instanceof ScenarioRemovedEventAvro) {
-            ScenarioRemovedEventAvro scenarioRemovedEvent = (ScenarioRemovedEventAvro) payload;
-            handleWithEvent(scenarioRemovedEvent, hubEvent);
-        } else {
-            log.warn("Unknown payload type: {}", payload.getClass().getSimpleName());
+        switch (payload) {
+            case DeviceAddedEventAvro deviceAddedEvent -> handleWithEvent(deviceAddedEvent, hubEvent);
+            case DeviceRemovedEventAvro deviceRemovedEvent -> handleWithEvent(deviceRemovedEvent, hubEvent);
+            case ScenarioAddedEventAvro scenarioAddedEvent -> handleWithEvent(scenarioAddedEvent, hubEvent);
+            case ScenarioRemovedEventAvro scenarioRemovedEvent -> handleWithEvent(scenarioRemovedEvent, hubEvent);
+            default -> log.warn("Unknown payload type: {}", payload.getClass().getSimpleName());
         }
     }
 

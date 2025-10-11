@@ -4,12 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.repository.ScenarioRepository;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioRemovedEventAvro;
-import ru.practicum.entity.Scenario;
-import ru.practicum.repository.ScenarioRepository;
-
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -23,11 +20,15 @@ public class ScenarioRemovedHandler implements HubEventHandler {
     @Transactional
     public void handle(HubEventAvro hubEventAvro) {
         ScenarioRemovedEventAvro scenarioRemovedEvent = (ScenarioRemovedEventAvro) hubEventAvro.getPayload();
-        Optional<Scenario> scenario = scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(),
-                scenarioRemovedEvent.getName());
-        if (scenario.isPresent()) {
-            scenarioRepository.delete(scenario.get());
-        }
+
+        scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), scenarioRemovedEvent.getName())
+                .ifPresentOrElse(
+                        scenario -> {
+                            scenarioRepository.delete(scenario);
+                            log.info("Scenario '{}' deleted for hub '{}'", scenarioRemovedEvent.getName(), hubEventAvro.getHubId());
+                        },
+                        () -> log.warn("Scenario '{}' not found for hub '{}'", scenarioRemovedEvent.getName(), hubEventAvro.getHubId())
+                );
     }
 
     @Override

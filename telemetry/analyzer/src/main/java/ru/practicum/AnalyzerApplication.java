@@ -27,25 +27,18 @@ public class AnalyzerApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         log.info("Starting Analyzer application...");
 
         hubEventsThread = new Thread(hubEventProcessor, "hub-event-processor");
-        hubEventsThread.setDaemon(true);
         hubEventsThread.start();
+        log.info("Started hub-event-processor thread");
 
         snapshotThread = new Thread(snapshotProcessor, "snapshot-processor");
-        snapshotThread.setDaemon(true);
         snapshotThread.start();
+        log.info("Started snapshot-processor thread");
 
         log.info("Kafka processors started successfully");
-
-        try {
-            Thread.currentThread().join();
-        } catch (InterruptedException e) {
-            log.info("Analyzer application interrupted");
-            Thread.currentThread().interrupt();
-        }
     }
 
     @PreDestroy

@@ -10,7 +10,6 @@ import ru.practicum.entity.Action;
 import ru.practicum.entity.Condition;
 import ru.practicum.entity.Scenario;
 import ru.practicum.repository.ScenarioRepository;
-
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,6 @@ public class ScenarioAnalysisService {
         String hubId = snapshot.getHubId();
         log.info("Analyzing scenarios for hub: {}", hubId);
 
-        // Получаю все сценарии для хаба
         List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
 
         if (scenarios.isEmpty()) {
@@ -102,27 +100,36 @@ public class ScenarioAnalysisService {
             log.warn("Sensor {} has null data", sensorId);
             return null;
         }
-
-        if (data instanceof ClimateSensorAvro climateSensor) {
-            Integer value = climateSensor.getTemperatureC();
-            log.info("Extracted temperature value: {} from ClimateSensor for sensor {}", value, sensorId);
-            return value;
-        } else if (data instanceof LightSensorAvro lightSensor) {
-            Integer value = lightSensor.getLuminosity();
-            log.info("Extracted luminosity value: {} from LightSensor for sensor {}", value, sensorId);
-            return value;
-        } else if (data instanceof MotionSensorAvro motionSensor) {
-            Integer value = motionSensor.getMotion() ? 1 : 0;
-            log.info("Extracted motion value: {} from MotionSensor for sensor {}", value, sensorId);
-            return value;
-        } else if (data instanceof SwitchSensorAvro switchSensor) {
-            Integer value = switchSensor.getState() ? 1 : 0;
-            log.info("Extracted switch value: {} from SwitchSensor for sensor {}", value, sensorId);
-            return value;
-        } else {
-            log.warn("Unknown sensor data type: {} for sensor {}",
-                    data.getClass().getSimpleName(), sensorId);
-            return null;
+        switch (data) {
+            case null -> {
+                log.warn("Sensor {} has null data", sensorId);
+                return null;
+            }
+            case ClimateSensorAvro climateSensor -> {
+                Integer value = climateSensor.getTemperatureC();
+                log.info("Extracted temperature value: {} from ClimateSensor for sensor {}", value, sensorId);
+                return value;
+            }
+            case LightSensorAvro lightSensor -> {
+                Integer value = lightSensor.getLuminosity();
+                log.info("Extracted luminosity value: {} from LightSensor for sensor {}", value, sensorId);
+                return value;
+            }
+            case MotionSensorAvro motionSensor -> {
+                Integer value = motionSensor.getMotion() ? 1 : 0;
+                log.info("Extracted motion value: {} from MotionSensor for sensor {}", value, sensorId);
+                return value;
+            }
+            case SwitchSensorAvro switchSensor -> {
+                Integer value = switchSensor.getState() ? 1 : 0;
+                log.info("Extracted switch value: {} from SwitchSensor for sensor {}", value, sensorId);
+                return value;
+            }
+            default -> {
+                log.warn("Unknown sensor data type: {} for sensor {}",
+                        data.getClass().getSimpleName(), sensorId);
+                return null;
+            }
         }
     }
 
