@@ -65,17 +65,15 @@ public class HubEventServiceImpl implements HubEventService {
         scenario.getActions().clear();
 
         payload.getConditions().forEach(cond -> {
-            Integer value = null;
-
-            Condition condition = conditionRepository.save(
-                    Condition.builder()
-                            .type(ConditionType.valueOf(cond.getType().name()))
-                            .operation(ConditionOperation.valueOf(cond.getOperation().name()))
-                            .value(value)
-                            .build()
-            );
-
             sensorRepository.findByIdAndHubId(cond.getSensorId(), hubId).ifPresent(sensor -> {
+                Condition condition = conditionRepository.save(
+                        Condition.builder()
+                                .type(ConditionType.valueOf(cond.getType().name()))
+                                .operation(ConditionOperation.valueOf(cond.getOperation().name()))
+                                .value(cond.getValue() != null ? (Integer) cond.getValue() : 0)
+                                .build()
+                );
+
                 ScenarioCondition sc = ScenarioCondition.builder()
                         .id(new ScenarioConditionId(scenario.getId(), sensor.getId(), condition.getId()))
                         .scenario(scenario)
@@ -87,14 +85,14 @@ public class HubEventServiceImpl implements HubEventService {
         });
 
         payload.getActions().forEach(act -> {
-            Action action = actionRepository.save(
-                    Action.builder()
-                            .type(ActionType.valueOf(act.getType().name()))
-                            .value(act.getValue())
-                            .build()
-            );
-
             sensorRepository.findByIdAndHubId(act.getSensorId(), hubId).ifPresent(sensor -> {
+                Action action = actionRepository.save(
+                        Action.builder()
+                                .type(ActionType.valueOf(act.getType().name()))
+                                .value(act.getValue() != null ? act.getValue() : 0)
+                                .build()
+                );
+
                 ScenarioAction sa = ScenarioAction.builder()
                         .id(new ScenarioActionId(scenario.getId(), sensor.getId(), action.getId()))
                         .scenario(scenario)
@@ -107,8 +105,8 @@ public class HubEventServiceImpl implements HubEventService {
 
         scenarioRepository.save(scenario);
 
-        log.info("Добавлен сценарий {} для хаба {} ({} условий, {} действий)",
-                name, hubId, payload.getConditions().size(), payload.getActions().size());
+        log.info("Добавлен сценарий '{}' для хаба {} ({} условий, {} действий)",
+                name, hubId, scenario.getConditions().size(), scenario.getActions().size());
     }
 
     @Override

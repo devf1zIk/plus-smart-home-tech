@@ -54,21 +54,26 @@ public class ScenarioExecutionServiceImpl implements ScenarioExecutionService {
     }
 
     private boolean evaluateCondition(Condition condition, Object data) {
-        if (condition == null || condition.getValue() == null) return false;
+        if (condition == null || condition.getValue() == null || condition.getOperation() == null) {
+            return false;
+        }
         int expected = condition.getValue();
+        ConditionOperation operation = condition.getOperation();
+        if (data instanceof Boolean b) {
+            int actual = b ? 1 : 0;
+            return switch (operation) {
+                case EQUALS -> actual == expected;
+                case GREATER_THAN -> actual > expected;
+                case LOWER_THAN -> actual < expected;
+            };
+        }
 
-        ConditionOperation op = ConditionOperation.valueOf(String.valueOf(condition.getOperation()));
-        switch (op) {
-            case EQUALS -> {
-                if (data instanceof Boolean b) return (b ? 1 : 0) == expected;
-                if (data instanceof Integer i) return i == expected;
-            }
-            case GREATER_THAN -> {
-                if (data instanceof Integer i) return i > expected;
-            }
-            case LOWER_THAN -> {
-                if (data instanceof Integer i) return i < expected;
-            }
+        if (data instanceof Integer i) {
+            return switch (operation) {
+                case EQUALS -> i == expected;
+                case GREATER_THAN -> i > expected;
+                case LOWER_THAN -> i < expected;
+            };
         }
         return false;
     }
