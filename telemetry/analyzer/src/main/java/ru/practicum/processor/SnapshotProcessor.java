@@ -26,7 +26,7 @@ public class SnapshotProcessor {
     private String snapshotsTopic;
 
     public void start() {
-        log.info("Запуск SnapshotProcessor. Подписка на топик: {}", snapshotsTopic);
+        log.info("Запуск SnapshotProcessor. Подписка на топики: {} ", snapshotsTopic);
 
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);

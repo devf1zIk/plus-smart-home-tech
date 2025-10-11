@@ -29,7 +29,6 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-
     consumer:
       group-id: analyzer-snapshots-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -39,7 +38,6 @@ spring:
       enable-auto-commit: false
       auto-offset-reset: earliest
       max-poll-records: 100
-
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
