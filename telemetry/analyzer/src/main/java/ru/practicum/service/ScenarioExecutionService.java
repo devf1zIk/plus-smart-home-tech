@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.entity.*;
 import ru.practicum.enums.ConditionOperation;
 import ru.practicum.repository.ScenarioRepository;
@@ -24,6 +25,7 @@ public class ScenarioExecutionService {
     @GrpcClient("hub-router")
     private HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
 
+    @Transactional
     public void processSnapshot(SensorsSnapshotAvro snapshot) {
         String hubId = snapshot.getHubId();
         List<Scenario> scenarios = scenarioRepository.findAllByHubId(hubId);
@@ -65,10 +67,15 @@ public class ScenarioExecutionService {
         return false;
     }
 
-    private void executeScenarioActions(String hubId,Instant timestamp,Scenario scenario) {
+    private void executeScenarioActions(String hubId, Instant timestamp, Scenario scenario) {
+        log.debug("Начинаем выполнение действий сценария '{}' для хаба {}", scenario.getName(), hubId);
+
         for (ScenarioAction sa : scenario.getActions()) {
             Action action = sa.getAction();
-            if (action == null || sa.getSensor() == null) continue;
+            if (action == null || sa.getSensor() == null) {
+                log.warn("Пропускаем действие: action или sensor равны null (ScenarioAction id={})", sa.getId());
+                continue;
+            }
 
             String sensorId = sa.getSensor().getId();
             int value = action.getValue() != null ? action.getValue() : 0;
@@ -91,11 +98,12 @@ public class ScenarioExecutionService {
 
             try {
                 hubRouterClient.handleDeviceAction(request);
-                log.info("Выполнено действие {} для сенсора {} (hubId={})",
+                log.info("Выполнено действие '{}' для сенсора '{}' (hubId={})",
                         action.getType(), sensorId, hubId);
             } catch (Exception e) {
-                log.error("Ошибка gRPC HubRouter: {}", e.getMessage(), e);
+                log.error("Ошибка при отправке gRPC-команды для сенсора {}: {}", sensorId, e.getMessage(), e);
             }
         }
+        log.debug("Завершено выполнение действий сценария '{}' для хаба {}", scenario.getName(), hubId);
     }
 }

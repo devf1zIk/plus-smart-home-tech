@@ -24,11 +24,11 @@ public class Scenario {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @Builder.Default
     private Set<ScenarioCondition> conditions = new HashSet<>();
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @Builder.Default
     private Set<ScenarioAction> actions = new HashSet<>();
 }
