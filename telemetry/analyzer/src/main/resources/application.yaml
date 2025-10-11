@@ -41,11 +41,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
-      properties:
-        acks: all
-        linger.ms: 5
-        batch.size: 16384
-        buffer.memory: 33554432
 
 analyzer:
   topics:

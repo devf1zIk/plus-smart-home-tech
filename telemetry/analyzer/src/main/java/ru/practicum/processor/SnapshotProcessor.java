@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import ru.practicum.service.ScenarioExecutionService;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
@@ -50,5 +51,11 @@ public class SnapshotProcessor {
         } catch (Exception e) {
             log.error("Ошибка в SnapshotProcessor: ", e);
         }
+    }
+
+    @KafkaListener(topics = "${analyzer.topics.snapshots}", groupId = "analyzer-snapshots-group")
+    public void listenSnapshots(SensorsSnapshotAvro snapshot) {
+        log.debug("Received snapshot: {}", snapshot);
+        scenarioExecutionService.processSnapshot(snapshot);
     }
 }
