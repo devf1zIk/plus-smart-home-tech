@@ -1,4 +1,4 @@
-package ru.yandex.practicum.kafka.telemetry.serialization;
+package ru.yandex.practicum.kafka.telemetry.deserialization;
 
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 

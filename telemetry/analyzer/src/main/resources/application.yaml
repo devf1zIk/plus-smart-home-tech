@@ -1,7 +1,6 @@
 spring:
   application:
     name: analyzer
-
   datasource:
     url: jdbc:postgresql://localhost:5432/smarthome
     username: postgres
@@ -20,32 +19,21 @@ spring:
       separator: ";"
       encoding: UTF-8
 
-  kafka:
-    bootstrap-servers: localhost:9092
-
-    consumer:
-      group-id: analyzer-snapshots-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
-      properties:
-        specific.avro.reader: true
-      enable-auto-commit: false
-      auto-offset-reset: earliest
-      max-poll-records: 100
-
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
-      properties:
-        acks: all
-        linger.ms: 5
-        batch.size: 16384
-        buffer.memory: 33554432
-
-analyzer:
+kafka:
+  bootstrap-servers: localhost:9092
   topics:
-    snapshots: telemetry.snapshots.v1
+    sensor-snapshots: telemetry.snapshots.v1
     hub-events: telemetry.hubs.v1
+  consumer:
+    snapshot-group-id: analyzer-snapshot-consumer-group
+    hub-event-group-id: analyzer-hub-consumer-group
+    auto-offset-reset: earliest
+    enable-auto-commit: false
+    consume-timeout: 500
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializers:
+      sensors-snapshot: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
+      hub-event: ru.yandex.practicum.kafka.telemetry.deserialization.HubEventDeserializer
 
 grpc:
   client:
@@ -54,9 +42,7 @@ grpc:
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
-
 logging:
   level:
-    root: INFO
+    ru.practicum: DEBUG
     org.springframework.kafka: INFO
-    ru.yandex.practicum: DEBUG

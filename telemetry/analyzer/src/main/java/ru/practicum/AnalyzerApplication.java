@@ -1,39 +1,65 @@
 package ru.practicum;
 
+import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.context.ConfigurableApplicationContext;
-import ru.practicum.processor.HubEventProcessor;
-import ru.practicum.processor.SnapshotProcessor;
+import ru.practicum.processors.HubEventProcessor;
+import ru.practicum.processors.SnapshotProcessor;
 
 @Slf4j
 @SpringBootApplication
 @ConfigurationPropertiesScan
-public class AnalyzerApplication {
+@RequiredArgsConstructor
+public class AnalyzerApplication implements CommandLineRunner {
+
+    private final HubEventProcessor hubEventProcessor;
+    private final SnapshotProcessor snapshotProcessor;
+
+    private Thread hubEventsThread;
+    private Thread snapshotThread;
+
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(AnalyzerApplication.class, args);
+        SpringApplication.run(AnalyzerApplication.class, args);
+    }
 
-        HubEventProcessor hubEventProcessor = context.getBean(HubEventProcessor.class);
-        SnapshotProcessor snapshotProcessor = context.getBean(SnapshotProcessor.class);
+    @Override
+    public void run(String... args) throws Exception {
+        log.info("Starting Analyzer application...");
 
-        Thread hubEventsThread = new Thread(hubEventProcessor);
-        hubEventsThread.setName("HubEventProcessor-Thread");
+        hubEventsThread = new Thread(hubEventProcessor, "hub-event-processor");
+        hubEventsThread.setDaemon(true);
         hubEventsThread.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Получен сигнал завершения работы. Ожидаем завершения потоков...");
-            try {
-                hubEventsThread.interrupt();
-                hubEventsThread.join(2000);
-            } catch (InterruptedException e) {
-                log.warn("Принудительное завершение потока HubEventProcessor", e);
-                Thread.currentThread().interrupt();
-            }
-            log.info("Analyzer корректно завершил работу.");
-        }));
+        snapshotThread = new Thread(snapshotProcessor, "snapshot-processor");
+        snapshotThread.setDaemon(true);
+        snapshotThread.start();
 
-        snapshotProcessor.start();
+        log.info("Kafka processors started successfully");
+
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            log.info("Analyzer application interrupted");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        log.info("Shutting down Analyzer application...");
+
+        if (hubEventsThread != null && hubEventsThread.isAlive()) {
+            log.info("Interrupting hub-events thread");
+            hubEventsThread.interrupt();
+        }
+
+        if (snapshotThread != null && snapshotThread.isAlive()) {
+            log.info("Interrupting snapshot thread");
+            snapshotThread.interrupt();
+        }
     }
 }

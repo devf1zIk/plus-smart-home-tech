@@ -1,6 +1,3 @@
-server:
-  port: 8080
-
 kafka:
   config:
     bootstrap-servers: localhost:9092
@@ -9,17 +6,7 @@ kafka:
     producer-value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
     sensor-events-topic: telemetry.sensors.v1
     hub-events-topic: telemetry.hubs.v1
-logging:
-  level:
-    root: INFO
-    ru.yandex.practicum.telemetry: TRACE
-    ru.practicum.kafka: INFO
-    org.springframework: ERROR
-    org.apache.kafka: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 grpc:
   server:
     port: 59091
-    reflection-service-enabled: true
