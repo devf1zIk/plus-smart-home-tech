@@ -1,6 +1,7 @@
-server:
-  port: 8080
-
+grpc:
+  server:
+    port: 59091
+    reflection-service-enabled: true
 kafka:
   config:
     bootstrap-servers: localhost:9092
@@ -18,8 +19,3 @@ logging:
     org.apache.kafka: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-
-grpc:
-  server:
-    port: 59091
-    reflection-service-enabled: true

@@ -1,3 +1,10 @@
+grpc:
+  client:
+    hub-router:
+      address: static://localhost:59090
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
 spring:
   application:
     name: analyzer
@@ -35,7 +42,7 @@ spring:
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
+      value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.StringDeserializer
       properties:
         acks: all
         linger.ms: 5
@@ -46,14 +53,6 @@ analyzer:
   topics:
     snapshots: telemetry.snapshots.v1
     hub-events: telemetry.hubs.v1
-
-grpc:
-  client:
-    hub-router:
-      address: 'static://localhost:59090'
-      enableKeepAlive: true
-      keepAliveWithoutCalls: true
-      negotiationType: plaintext
 
 logging:
   level:

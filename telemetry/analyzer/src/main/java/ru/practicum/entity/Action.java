@@ -2,6 +2,7 @@ package ru.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.enums.ActionType;
 
 @Entity
 @Table(name = "actions")
@@ -14,10 +15,11 @@ public class Action {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    String type;
+    private ActionType type;
 
-    Integer value;
+    private Integer value;
 }

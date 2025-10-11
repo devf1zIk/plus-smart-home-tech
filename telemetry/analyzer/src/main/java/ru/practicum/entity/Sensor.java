@@ -1,7 +1,7 @@
 package ru.practicum.entity;
 
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "sensors")
@@ -13,8 +13,8 @@ import jakarta.persistence.*;
 public class Sensor {
 
     @Id
-    String id;
+    private String id;
 
     @Column(name = "hub_id", nullable = false)
-    String hubId;
+    private String hubId;
 }

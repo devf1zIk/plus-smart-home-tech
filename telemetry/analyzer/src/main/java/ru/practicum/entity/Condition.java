@@ -2,6 +2,8 @@ package ru.practicum.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.enums.ConditionType;
+import ru.practicum.enums.ConditionOperation;
 
 @Entity
 @Table(name = "conditions")
@@ -14,14 +16,15 @@ public class Condition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    String type;
+    private ConditionType type;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    String operation;
+    private ConditionOperation operation;
 
-    @Column
-    Integer value;
+    private Integer value;
 }

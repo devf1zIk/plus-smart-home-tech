@@ -1,7 +1,7 @@
 package ru.practicum.entity;
 
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "scenario_conditions")
@@ -13,20 +13,20 @@ import jakarta.persistence.*;
 public class ScenarioCondition {
 
     @EmbeddedId
-    ScenarioConditionId id;
+    private ScenarioConditionId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("scenarioId")
     @JoinColumn(name = "scenario_id")
-    Scenario scenario;
+    private Scenario scenario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("sensorId")
     @JoinColumn(name = "sensor_id")
-    Sensor sensor;
+    private Sensor sensor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("conditionId")
     @JoinColumn(name = "condition_id")
-    Condition condition;
+    private Condition condition;
 }
