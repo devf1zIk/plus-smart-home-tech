@@ -66,11 +66,14 @@ public class HubEventServiceImpl implements HubEventService {
 
         payload.getConditions().forEach(cond -> {
             sensorRepository.findByIdAndHubId(cond.getSensorId(), hubId).ifPresent(sensor -> {
+                Object rawValue = cond.getValue();
+                Integer intValue = parseToInteger(rawValue);
+
                 Condition condition = conditionRepository.save(
                         Condition.builder()
                                 .type(ConditionType.valueOf(cond.getType().name()))
                                 .operation(ConditionOperation.valueOf(cond.getOperation().name()))
-                                .value(cond.getValue() != null ? (Integer) cond.getValue() : 0)
+                                .value(intValue)
                                 .build()
                 );
 
@@ -86,10 +89,13 @@ public class HubEventServiceImpl implements HubEventService {
 
         payload.getActions().forEach(act -> {
             sensorRepository.findByIdAndHubId(act.getSensorId(), hubId).ifPresent(sensor -> {
+                Object rawValue = act.getValue();
+                Integer intValue = parseToInteger(rawValue);
+
                 Action action = actionRepository.save(
                         Action.builder()
                                 .type(ActionType.valueOf(act.getType().name()))
-                                .value(act.getValue() != null ? act.getValue() : 0)
+                                .value(intValue)
                                 .build()
                 );
 
@@ -107,6 +113,18 @@ public class HubEventServiceImpl implements HubEventService {
 
         log.info("Добавлен сценарий '{}' для хаба {} ({} условий, {} действий)",
                 name, hubId, scenario.getConditions().size(), scenario.getActions().size());
+    }
+
+    private Integer parseToInteger(Object value) {
+        if (value == null) return 0;
+        if (value instanceof Integer) return (Integer) value;
+        if (value instanceof Boolean) return (Boolean) value ? 1 : 0;
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
+            log.warn("Не удалось преобразовать значение '{}' в Integer", value);
+            return 0;
+        }
     }
 
     @Override

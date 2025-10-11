@@ -4,7 +4,7 @@ grpc:
       address: "static://localhost:59090"
       enableKeepAlive: true
       keepAliveWithoutCalls: true
-      negotiationType: plaintext
+      negotiationType: "plaintext"
 spring:
   application:
     name: analyzer
