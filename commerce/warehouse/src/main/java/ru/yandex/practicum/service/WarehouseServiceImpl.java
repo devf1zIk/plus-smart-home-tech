@@ -7,6 +7,7 @@ import ru.yandex.practicum.dto.WarehouseCheckResponseDto;
 import ru.yandex.practicum.dto.WarehouseItemRequestDto;
 import ru.yandex.practicum.dto.WarehouseItemResponseDto;
 import ru.yandex.practicum.exception.InsufficientStockException;
+import ru.yandex.practicum.exception.InvalidQuantityException;
 import ru.yandex.practicum.exception.ProductAlreadyExistsException;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.mapper.WarehouseMapper;
@@ -37,10 +38,17 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public WarehouseItemResponseDto updateQuantity(UUID productId, Long addQuantity) {
+        if (addQuantity == null) {
+            throw new IllegalArgumentException("Quantity to add cannot be null");
+        }
         WarehouseItem item = warehouseRepository.findByProductId(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found in warehouse"));
 
-        item.setQuantity(item.getQuantity() + addQuantity);
+        long newQuantity = item.getQuantity() + addQuantity;
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("Resulting quantity cannot be negative");
+        }
+        item.setQuantity(newQuantity);
         WarehouseItem updated = warehouseRepository.save(item);
 
         return warehouseMapper.toDto(updated);
@@ -48,6 +56,14 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public WarehouseCheckResponseDto checkAvailability(UUID productId, Long requestedQuantity) {
+        if (requestedQuantity == null) {
+            throw new InvalidQuantityException("Requested quantity cannot be null");
+        }
+
+        if (requestedQuantity <= 0) {
+            throw new InvalidQuantityException("Requested quantity must be positive");
+        }
+
         WarehouseItem item = warehouseRepository.findByProductId(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found in warehouse"));
 

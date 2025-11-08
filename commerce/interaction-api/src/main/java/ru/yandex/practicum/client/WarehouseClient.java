@@ -8,7 +8,7 @@ import ru.yandex.practicum.dto.WarehouseItemResponseDto;
 import java.util.UUID;
 
 @FeignClient(name = "warehouse")
-public interface WareHouseClient {
+public interface WarehouseClient {
 
     @PostMapping("/api/v1/warehouse/add")
     WarehouseItemResponseDto addProduct(@RequestBody WarehouseItemRequestDto dto);

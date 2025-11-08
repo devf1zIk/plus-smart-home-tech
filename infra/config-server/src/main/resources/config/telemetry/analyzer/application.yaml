@@ -44,5 +44,5 @@ grpc:
       negotiationType: plaintext
 logging:
   level:
-    ru.practicum: DEBUG
+    ru.yandex.practicum: DEBUG
     org.springframework.kafka: INFO

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.enums.AvailabilityStatus;
 import ru.yandex.practicum.enums.ProductStatus;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Table(name = "product")
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -29,6 +30,6 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    @Column(nullable = false)
-    private Double price;
+    @Column(nullable = false,precision = 19,scale = 2)
+    private BigDecimal price;
 }

@@ -9,6 +9,10 @@ import ru.yandex.practicum.model.WarehouseItem;
 public class WarehouseMapper {
 
     public WarehouseItem toEntity(WarehouseItemRequestDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
         WarehouseItem item = new WarehouseItem();
         item.setProductId(dto.getProductId());
         item.setFragile(dto.getFragile());
@@ -21,6 +25,10 @@ public class WarehouseMapper {
     }
 
     public WarehouseItemResponseDto toDto(WarehouseItem entity) {
+        if (entity == null) {
+            return null;
+        }
+
         WarehouseItemResponseDto dto = new WarehouseItemResponseDto();
         dto.setId(entity.getId());
         dto.setProductId(entity.getProductId());

@@ -16,15 +16,19 @@ public class WarehouseItemRequestDto {
     private Boolean fragile;
 
     @Positive
+    @NotNull
     private Double weight;
 
     @Positive
+    @NotNull
     private Double width;
 
     @Positive
+    @NotNull
     private Double height;
 
     @Positive
+    @NotNull
     private Double depth;
 
     @PositiveOrZero

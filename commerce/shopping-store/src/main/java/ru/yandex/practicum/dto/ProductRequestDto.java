@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.yandex.practicum.enums.AvailabilityStatus;
+import java.math.BigDecimal;
 
 @Data
 public class ProductRequestDto {
@@ -19,5 +20,5 @@ public class ProductRequestDto {
 
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)
-    private Double price;
+    private BigDecimal price;
 }
