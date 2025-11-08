@@ -2,27 +2,20 @@ spring:
   application:
     name: aggregator
 
-logging:
-  level:
-    ru.practicum: INFO
-    org:
-      springframework: ERROR
-      apache.kafka: ERROR
+  config:
+    import: "configserver:"
 
+  cloud:
+    config:
+      fail-fast: true
+      retry:
+        useRandomPolicy: true
+        max-interval: 6000
+      discovery:
+        enabled: true
+        serviceId: config-server
 
-kafka:
-  topics:
-    telemetry-sensors: telemetry.sensors.v1
-    telemetry-snapshots: telemetry.snapshots.v1
-
-  producer:
-    bootstrap-servers: localhost:9092
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: ru.yandex.practicum.kafka.telemetry.serialization.GeneralAvroSerializer
-
-  consumer:
-    bootstrap-servers": localhost:9092
-    group-id: aggregator-consumer-group
-    client-id: aggregator-consumer-client
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: ru.yandex.practicum.kafka.telemetry.serialization.SensorEventDeserializer
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/

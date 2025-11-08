@@ -1,48 +1,22 @@
 spring:
   application:
     name: analyzer
-  datasource:
-    url: jdbc:postgresql://localhost:5432/smarthome
-    username: postgres
-    password: password
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema.sql
-      continue-on-error: false
-      separator: ";"
-      encoding: UTF-8
-
-kafka:
-  bootstrap-servers: localhost:9092
-  topics:
-    sensor-snapshots: telemetry.snapshots.v1
-    hub-events: telemetry.hubs.v1
-  consumer:
-    snapshot-group-id: analyzer-snapshot-consumer-group
-    hub-event-group-id: analyzer-hub-consumer-group
-    auto-offset-reset: earliest
-    enable-auto-commit: false
-    consume-timeout: 500
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializers:
-      sensors-snapshot: ru.yandex.practicum.kafka.telemetry.serialization.SensorsSnapshotDeserializer
-      hub-event: ru.yandex.practicum.kafka.telemetry.deserialization.HubEventDeserializer
-
-grpc:
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fast: true
+      retry:
+        use-random-policy: true
+        max-interval: 6000
+server:
+  port: 0
+eureka:
   client:
-    hub-router:
-      address: 'static://localhost:59090'
-      enableKeepAlive: true
-      keepAliveWithoutCalls: true
-      negotiationType: plaintext
-logging:
-  level:
-    ru.practicum: DEBUG
-    org.springframework.kafka: INFO
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    non-secure-port: 8080
