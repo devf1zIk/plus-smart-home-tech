@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: shopping-store
   datasource:
     url: jdbc:postgresql://localhost:5432/smarthome
     username: postgres
