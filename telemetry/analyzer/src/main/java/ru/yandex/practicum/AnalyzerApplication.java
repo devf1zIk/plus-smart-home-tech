@@ -48,11 +48,27 @@ public class AnalyzerApplication implements CommandLineRunner {
         if (hubEventsThread != null && hubEventsThread.isAlive()) {
             log.info("Interrupting hub-events thread");
             hubEventsThread.interrupt();
+            try {
+                hubEventsThread.join(5000);
+                if (hubEventsThread.isAlive()) {
+                    log.warn("Hub-events thread did not terminate gracefully");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         if (snapshotThread != null && snapshotThread.isAlive()) {
             log.info("Interrupting snapshot thread");
             snapshotThread.interrupt();
+            try {
+                snapshotThread.join(5000);
+                if (snapshotThread.isAlive()) {
+                    log.warn("Snapshot thread did not terminate gracefully");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }
