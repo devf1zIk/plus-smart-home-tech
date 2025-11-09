@@ -12,4 +12,6 @@ public interface WarehouseService {
     WarehouseItemResponseDto updateQuantity(UUID productId, Long addQuantity);
 
     WarehouseCheckResponseDto checkAvailability(UUID productId, Long requestedQuantity);
+
+    WarehouseItemResponseDto updateProduct(UUID productId, WarehouseItemRequestDto dto);
 }

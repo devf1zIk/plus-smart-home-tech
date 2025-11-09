@@ -32,5 +32,6 @@ public class WarehouseItemRequestDto {
     private Double depth;
 
     @PositiveOrZero
+    @NotNull
     private Long quantity;
 }

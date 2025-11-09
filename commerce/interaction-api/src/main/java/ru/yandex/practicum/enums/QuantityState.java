@@ -1,6 +1,6 @@
 package ru.yandex.practicum.enums;
 
-public enum AvailabilityStatus {
+public enum QuantityState {
     ENDED,
     FEW,
     ENOUGH,

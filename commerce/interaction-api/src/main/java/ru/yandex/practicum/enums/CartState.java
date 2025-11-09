@@ -1,6 +1,6 @@
 package ru.yandex.practicum.enums;
 
-public enum CartStatus {
+public enum CartState {
     ACTIVE,
     DEACTIVATE
 }

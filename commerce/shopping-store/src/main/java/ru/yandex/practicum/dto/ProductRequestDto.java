@@ -4,7 +4,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import ru.yandex.practicum.enums.AvailabilityStatus;
+import ru.yandex.practicum.enums.QuantityState;
 import java.math.BigDecimal;
 
 @Data
@@ -16,7 +16,7 @@ public class ProductRequestDto {
     private String description;
 
     @NotNull
-    private AvailabilityStatus availability;
+    private QuantityState availability;
 
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)

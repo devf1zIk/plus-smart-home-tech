@@ -3,8 +3,8 @@ spring:
     name: analyzer
   datasource:
     url: jdbc:postgresql://localhost:5432/smarthome
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD}
+    username: postgres
+    password: karakesek
     driver-class-name: org.postgresql.Driver
 
   jpa:

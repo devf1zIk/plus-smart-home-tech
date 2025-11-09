@@ -76,4 +76,21 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         return new WarehouseCheckResponseDto(totalWeight, totalVolume, item.getFragile());
     }
+
+    @Override
+    public WarehouseItemResponseDto updateProduct(UUID productId, WarehouseItemRequestDto dto) {
+        WarehouseItem item = warehouseRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+
+        item.setFragile(dto.getFragile());
+        item.setWidth(dto.getWidth());
+        item.setHeight(dto.getHeight());
+        item.setDepth(dto.getDepth());
+        item.setWeight(dto.getWeight());
+        if (dto.getQuantity() != null) {
+            item.setQuantity(dto.getQuantity());
+        }
+        WarehouseItem updated = warehouseRepository.save(item);
+        return warehouseMapper.toDto(updated);
+    }
 }

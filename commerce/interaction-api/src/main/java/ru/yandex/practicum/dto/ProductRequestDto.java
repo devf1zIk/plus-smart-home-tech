@@ -2,7 +2,7 @@ package ru.yandex.practicum.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import ru.yandex.practicum.enums.AvailabilityStatus;
+import ru.yandex.practicum.enums.QuantityState;
 
 @Data
 public class ProductRequestDto {
@@ -13,7 +13,7 @@ public class ProductRequestDto {
     private String description;
 
     @NotNull
-    private AvailabilityStatus availability;
+    private QuantityState availability;
 
     @NotNull
     @DecimalMin(value = "0.0", inclusive = false)

@@ -3,7 +3,7 @@ package ru.yandex.practicum.mapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.ProductRequestDto;
 import ru.yandex.practicum.dto.ProductResponseDto;
-import ru.yandex.practicum.enums.ProductStatus;
+import ru.yandex.practicum.enums.ProductState;
 import ru.yandex.practicum.model.Product;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class ProductMapper {
         product.setDescription(dto.getDescription());
         product.setAvailability(dto.getAvailability());
         product.setPrice(dto.getPrice());
-        product.setStatus(ProductStatus.ACTIVE);
+        product.setStatus(ProductState.ACTIVE);
 
         return product;
     }

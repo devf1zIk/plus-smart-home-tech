@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.CartItemRequestDto;
 import ru.yandex.practicum.dto.CartResponseDto;
-import ru.yandex.practicum.enums.CartStatus;
+import ru.yandex.practicum.enums.CartState;
 import ru.yandex.practicum.exception.CartDeactivatedException;
 import ru.yandex.practicum.exception.CartItemNotFoundException;
 import ru.yandex.practicum.mapper.CartMapper;
@@ -34,7 +34,7 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = new Cart();
         cart.setUsername(username);
-        cart.setStatus(CartStatus.ACTIVE);
+        cart.setStatus(CartState.ACTIVE);
         return cartRepository.save(cart);
     }
 
@@ -48,7 +48,7 @@ public class CartServiceImpl implements CartService {
     public CartResponseDto addItem(String username, CartItemRequestDto dto) {
         Cart cart = getOrCreateCart(username);
 
-        if (cart.getStatus() == CartStatus.DEACTIVATE) {
+        if (cart.getStatus() == CartState.DEACTIVATE) {
             throw new CartDeactivatedException();
         }
 
@@ -99,7 +99,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponseDto deactivateCart(String username) {
         Cart cart = getOrCreateCart(username);
-        cart.setStatus(CartStatus.DEACTIVATE);
+        cart.setStatus(CartState.DEACTIVATE);
         cartRepository.save(cart);
         return cartMapper.toDto(cart);
     }

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.ProductRequestDto;
 import ru.yandex.practicum.dto.ProductResponseDto;
-import ru.yandex.practicum.enums.ProductStatus;
+import ru.yandex.practicum.enums.ProductState;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.mapper.ProductMapper;
@@ -24,7 +24,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponseDto> getAllActive() {
         try {
-            List<Product> products = repository.findByStatus(ProductStatus.ACTIVE);
+            List<Product> products = repository.findByStatus(ProductState.ACTIVE);
             return mapper.toDtoList(products);
         } catch (Exception e) {
             throw new ProductOperationException("Ошибка при получении активных продуктов", e);
@@ -73,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Product product = productOpt.get();
-        product.setStatus(ProductStatus.DEACTIVATE);
+        product.setStatus(ProductState.DEACTIVATE);
         repository.save(product);
     }
 }
