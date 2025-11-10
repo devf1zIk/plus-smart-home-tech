@@ -6,11 +6,15 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewProductInWarehouseRequestDto {
+
+    @NotBlank
+    UUID productId;
 
     @NotBlank(message = "Название продукта обязательно")
     String name;
@@ -33,4 +37,6 @@ public class NewProductInWarehouseRequestDto {
 
     @NotNull(message = "Признак хрупкости обязателен")
     Boolean fragile;
+
+    Long quantity;
 }

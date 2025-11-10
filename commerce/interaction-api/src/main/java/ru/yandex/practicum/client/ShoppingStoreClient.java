@@ -22,7 +22,7 @@ public interface ShoppingStoreClient {
     @PutMapping("/api/v1/shopping-store")
     ProductDto createProduct(@RequestBody ProductDto dto);
 
-    @PutMapping ("/api/v1/shopping-store/{productId}")
+    @PutMapping("/api/v1/shopping-store/{productId}")
     ProductDto updateProduct(@PathVariable UUID productId,
                                      @RequestBody ProductDto dto);
 

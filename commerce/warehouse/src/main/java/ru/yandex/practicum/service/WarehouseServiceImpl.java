@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.model.WarehouseItem;
-import ru.yandex.practicum.repository.ProductRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 import java.util.UUID;
 
@@ -16,19 +15,20 @@ import java.util.UUID;
 public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
-    private final ProductRepository productRepository;
 
     @Override
     public void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductDto) {
 
         WarehouseItem product = WarehouseItem.builder()
+                .productId(newProductDto.getProductId())
                 .width(newProductDto.getWidth())
                 .height(newProductDto.getHeight())
                 .weight(newProductDto.getWeight())
                 .fragile(newProductDto.getFragile())
+                .quantity(newProductDto.getQuantity())
                 .build();
 
-        productRepository.save(product);
+        warehouseRepository.save(product);
     }
 
     @Override

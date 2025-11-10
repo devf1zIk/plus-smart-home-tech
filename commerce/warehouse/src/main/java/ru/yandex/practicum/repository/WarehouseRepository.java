@@ -9,5 +9,4 @@ public interface WarehouseRepository extends JpaRepository<WarehouseItem, UUID> 
 
     Optional<WarehouseItem> findByProductId(UUID productId);
 
-    boolean existsByProductId(UUID productId);
 }
