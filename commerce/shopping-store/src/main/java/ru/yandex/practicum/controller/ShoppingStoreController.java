@@ -38,7 +38,7 @@ public class ShoppingStoreController implements ShoppingStoreClient {
     }
 
     @PutMapping("/{productId}")
-    public ProductDto updateProduct(@PathVariable UUID productId,
+    public ProductDto updateProduct(@PathVariable @NotNull UUID productId,
                                     @Valid @RequestBody ProductDto dto) {
         return service.update(productId, dto);
     }
