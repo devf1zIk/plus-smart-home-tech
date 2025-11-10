@@ -38,5 +38,7 @@ public class NewProductInWarehouseRequestDto {
     @NotNull(message = "Признак хрупкости обязателен")
     Boolean fragile;
 
+    @NotNull(message = "Количество обязательно")
+    @Positive(message = "Количество должно быть положительным")
     Long quantity;
 }

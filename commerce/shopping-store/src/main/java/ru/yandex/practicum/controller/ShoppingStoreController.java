@@ -43,8 +43,8 @@ public class ShoppingStoreController implements ShoppingStoreClient {
         return service.update(productId, dto);
     }
 
-    @PostMapping("/removeProductFromStore")
-    public Boolean deleteProduct(@RequestBody @NotNull UUID productId) {
+    @DeleteMapping("/{productId}")
+    public Boolean deleteProduct(@PathVariable @NotNull UUID productId) {
         return service.deactivate(productId);
     }
 
