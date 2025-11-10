@@ -32,12 +32,12 @@ public class ShoppingStoreController implements ShoppingStoreClient {
     }
 
 
-    @PutMapping
+    @PostMapping
     public ProductDto createProduct(@Valid @RequestBody ProductDto dto) {
         return service.create(dto);
     }
 
-    @PostMapping("/{productId}")
+    @PutMapping("/{productId}")
     public ProductDto updateProduct(@PathVariable UUID productId,
                                     @Valid @RequestBody ProductDto dto) {
         return service.update(productId, dto);
