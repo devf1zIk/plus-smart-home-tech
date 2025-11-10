@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.ProductNotFoundException;
+import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.model.WarehouseItem;
 import ru.yandex.practicum.repository.WarehouseRepository;
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .productId(newProductDto.getProductId())
                 .width(newProductDto.getWidth())
                 .height(newProductDto.getHeight())
+                .depth(newProductDto.getLength())
                 .weight(newProductDto.getWeight())
                 .fragile(newProductDto.getFragile())
                 .quantity(newProductDto.getQuantity())
@@ -33,6 +35,9 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto) {
+        if (shoppingCartDto == null || shoppingCartDto.getProducts() == null) {
+            throw new ProductNotFoundException("Корзина покупателя не может быть пустой");
+        }
 
         double totalWeight = 0.0;
         double totalVolume = 0.0;
@@ -42,6 +47,9 @@ public class WarehouseServiceImpl implements WarehouseService {
             UUID productId = entry.getKey();
             Long requestedQuantity = entry.getValue();
 
+            if (requestedQuantity == null || requestedQuantity <= 0) {
+                throw new ProductOperationException("Количество товара должно быть положительным: " + productId);
+            }
             var warehouseItemOpt = warehouseRepository.findByProductId(productId);
             if (warehouseItemOpt.isEmpty() || warehouseItemOpt.get().getQuantity() < requestedQuantity) {
                 throw new ProductNotFoundException("Недостаточно товара на складе: " + productId);
@@ -62,14 +70,24 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public void updateProductToWarehouse(AddProductToWarehouseRequestDto addDto) {
+        if (addDto == null) {
+            throw new ProductNotFoundException("Данные для обновления товара не могут быть пустыми");
+        }
 
+        if (addDto.getQuantity() == null) {
+            throw new ProductNotFoundException("Количество товара обязательно к указанию");
+        }
         var warehouseItemOpt = warehouseRepository.findByProductId(addDto.getProductId());
         if (warehouseItemOpt.isEmpty()) {
-            throw new IllegalArgumentException("Товар не найден на складе: " + addDto.getProductId());
+            throw new ProductNotFoundException("Товар не найден на складе: " + addDto.getProductId());
         }
 
         var warehouseItem = warehouseItemOpt.get();
-        warehouseItem.setQuantity(warehouseItem.getQuantity() + addDto.getQuantity());
+        long newQuantity = warehouseItem.getQuantity() + addDto.getQuantity();
+        if (newQuantity < 0) {
+            throw new ProductNotFoundException("Результирующее количество не может быть отрицательным: " + addDto.getProductId());
+        }
+        warehouseItem.setQuantity(newQuantity);
         warehouseRepository.save(warehouseItem);
 
     }

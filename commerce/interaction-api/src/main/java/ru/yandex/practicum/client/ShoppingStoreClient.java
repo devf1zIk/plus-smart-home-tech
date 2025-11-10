@@ -2,6 +2,7 @@ package ru.yandex.practicum.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.ProductDto;
@@ -14,7 +15,7 @@ public interface ShoppingStoreClient {
 
     @GetMapping("/api/v1/shopping-store")
     Page<ProductDto> getProducts(@RequestParam(required = false) ProductCategory category,
-                                 Pageable pageable);
+                                 @SpringQueryMap Pageable pageable);
 
     @GetMapping("/api/v1/shopping-store/{productId}")
     ProductDto getProductById(@PathVariable UUID productId);

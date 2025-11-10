@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
             }
             return products.map(mapper::toDto);
         } catch (Exception e) {
-            throw new ProductOperationException("Ошибка при получении списка продуктов", e);
+            throw new ProductOperationException("Ошибка при получении списка продуктов");
         }
     }
 
@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
             Product saved = repository.save(product);
             return mapper.toDto(saved);
         } catch (Exception e) {
-            throw new ProductOperationException("Ошибка при создании продукта: " + dto.getProductName(), e);
+            throw new ProductOperationException("Ошибка при создании продукта: " + dto.getProductName());
         }
     }
 

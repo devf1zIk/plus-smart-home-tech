@@ -10,7 +10,7 @@ import java.util.UUID;
 public class CartResponseDto {
 
     @NotNull
-    UUID productId;
+    UUID cartId;
 
     @NotNull
     String username;

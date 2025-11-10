@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class NewProductInWarehouseRequestDto {
 
-    @NotBlank
+    @NotNull(message = "ID продукта обязателен")
     UUID productId;
 
     @NotBlank(message = "Название продукта обязательно")
