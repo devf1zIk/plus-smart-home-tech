@@ -1,21 +1,23 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
+@Builder
 @Table(name = "warehouse_items")
+@NoArgsConstructor
+@AllArgsConstructor
 public class WarehouseItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "product_id", nullable = false, unique = true)
     private UUID productId;
 
     @Column(nullable = false)

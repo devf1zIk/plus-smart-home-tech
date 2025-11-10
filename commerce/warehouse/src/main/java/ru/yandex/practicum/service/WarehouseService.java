@@ -1,17 +1,14 @@
 package ru.yandex.practicum.service;
 
-import ru.yandex.practicum.dto.WarehouseCheckResponseDto;
-import ru.yandex.practicum.dto.WarehouseItemRequestDto;
-import ru.yandex.practicum.dto.WarehouseItemResponseDto;
-import java.util.UUID;
+import ru.yandex.practicum.dto.*;
 
 public interface WarehouseService {
 
-    WarehouseItemResponseDto addProduct(WarehouseItemRequestDto dto);
+    void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductInWarehouseRequestDto);
 
-    WarehouseItemResponseDto updateQuantity(UUID productId, Long addQuantity);
+    BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto);
 
-    WarehouseCheckResponseDto checkAvailability(UUID productId, Long requestedQuantity);
+    void updateProductToWarehouse(AddProductToWarehouseRequestDto addProductToWarehouseRequestDto);
 
-    WarehouseItemResponseDto updateProduct(UUID productId, WarehouseItemRequestDto dto);
+    AddressDto getWarehouseAddress();
 }

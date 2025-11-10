@@ -1,21 +1,22 @@
 package ru.yandex.practicum.client;
 
+import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.WarehouseCheckResponseDto;
-import ru.yandex.practicum.dto.WarehouseItemRequestDto;
-import ru.yandex.practicum.dto.WarehouseItemResponseDto;
-import java.util.UUID;
+import ru.yandex.practicum.dto.*;
 
 @FeignClient(name = "warehouse")
 public interface WarehouseClient {
 
+    @PutMapping("/api/v1/warehouse")
+    void addNewProductToWarehouse(@RequestBody @Valid NewProductInWarehouseRequestDto newProductInWarehouseRequestDto);
+
+    @PostMapping("/api/v1/warehouse/check")
+    BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto shoppingCartDto);
+
     @PostMapping("/api/v1/warehouse/add")
-    WarehouseItemResponseDto addProduct(@RequestBody WarehouseItemRequestDto dto);
+    void updateProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequestDto addProductToWarehouseRequestDto);
 
-    @PatchMapping("/api/v1/warehouse/{productId}/quantity")
-    WarehouseItemResponseDto updateQuantity(@PathVariable UUID productId, @RequestParam Long quantity);
-
-    @GetMapping("/api/v1/warehouse/{productId}/check")
-    WarehouseCheckResponseDto checkAvailability(@PathVariable UUID productId, @RequestParam Long requestedQuantity);
+    @GetMapping("/api/v1/warehouse/address")
+    AddressDto getWarehouseAddress();
 }

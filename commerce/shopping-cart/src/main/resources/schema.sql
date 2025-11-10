@@ -1,27 +1,18 @@
-CREATE TABLE IF NOT EXISTS cart (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS shopping_cart (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(100) NOT NULL UNIQUE,
+    status VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS cart_item (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    product_id UUID NOT NULL,
-    quantity INTEGER DEFAULT 1 CHECK (quantity > 0),
+CREATE TABLE IF NOT EXISTS cart_product (
     cart_id UUID NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_cart_item_cart
+    product_id UUID NOT NULL,
+    quantity BIGINT NOT NULL DEFAULT 1 CHECK (quantity > 0),
+    CONSTRAINT fk_cart_product_cart
     FOREIGN KEY (cart_id)
-    REFERENCES cart (id)
-    ON DELETE CASCADE,
-    CONSTRAINT fk_cart_item_product
-    FOREIGN KEY (product_id)
-    REFERENCES product (id)
-    ON DELETE RESTRICT
-    );
+    REFERENCES shopping_cart (id)
+    ON DELETE CASCADE
+);
 
-CREATE INDEX IF NOT EXISTS idx_cart_user_id ON cart (user_id);
-CREATE INDEX IF NOT EXISTS idx_cart_item_cart_id ON cart_item (cart_id);
-CREATE INDEX IF NOT EXISTS idx_cart_item_product_id ON cart_item (product_id);
+CREATE INDEX IF NOT EXISTS idx_cart_product_cart_id ON cart_product(cart_id);
+CREATE INDEX IF NOT EXISTS idx_cart_product_product_id ON cart_product(product_id);

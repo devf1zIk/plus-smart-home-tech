@@ -3,15 +3,10 @@ package ru.yandex.practicum.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.WarehouseCheckResponseDto;
-import ru.yandex.practicum.dto.WarehouseItemRequestDto;
-import ru.yandex.practicum.dto.WarehouseItemResponseDto;
-import ru.yandex.practicum.exception.InsufficientStockException;
-import ru.yandex.practicum.exception.InvalidQuantityException;
-import ru.yandex.practicum.exception.ProductAlreadyExistsException;
+import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.exception.ProductNotFoundException;
-import ru.yandex.practicum.mapper.WarehouseMapper;
 import ru.yandex.practicum.model.WarehouseItem;
+import ru.yandex.practicum.repository.ProductRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 import java.util.UUID;
 
@@ -21,76 +16,71 @@ import java.util.UUID;
 public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
-    private final WarehouseMapper warehouseMapper;
+    private final ProductRepository productRepository;
 
     @Override
-    public WarehouseItemResponseDto addProduct(WarehouseItemRequestDto dto) {
-        if (warehouseRepository.existsByProductId(dto.getProductId())) {
-            throw new ProductAlreadyExistsException("Product already exists in warehouse");
-        }
+    public void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductDto) {
 
-        WarehouseItem entity = warehouseMapper.toEntity(dto);
-        entity.setQuantity(dto.getQuantity() != null ? dto.getQuantity() : 0L);
+        WarehouseItem product = WarehouseItem.builder()
+                .width(newProductDto.getWidth())
+                .height(newProductDto.getHeight())
+                .weight(newProductDto.getWeight())
+                .fragile(newProductDto.getFragile())
+                .build();
 
-        WarehouseItem saved = warehouseRepository.save(entity);
-        return warehouseMapper.toDto(saved);
+        productRepository.save(product);
     }
 
     @Override
-    public WarehouseItemResponseDto updateQuantity(UUID productId, Long addQuantity) {
-        if (addQuantity == null) {
-            throw new IllegalArgumentException("Quantity to add cannot be null");
-        }
-        WarehouseItem item = warehouseRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found in warehouse"));
+    public BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto) {
 
-        long newQuantity = item.getQuantity() + addQuantity;
-        if (newQuantity < 0) {
-            throw new IllegalArgumentException("Resulting quantity cannot be negative");
-        }
-        item.setQuantity(newQuantity);
-        WarehouseItem updated = warehouseRepository.save(item);
+        double totalWeight = 0.0;
+        double totalVolume = 0.0;
+        boolean hasFragile = false;
 
-        return warehouseMapper.toDto(updated);
+        for (var entry : shoppingCartDto.getProducts().entrySet()) {
+            UUID productId = entry.getKey();
+            Long requestedQuantity = entry.getValue();
+
+            var warehouseItemOpt = warehouseRepository.findByProductId(productId);
+            if (warehouseItemOpt.isEmpty() || warehouseItemOpt.get().getQuantity() < requestedQuantity) {
+                throw new ProductNotFoundException("Недостаточно товара на складе: " + productId);
+            }
+
+            WarehouseItem warehouseItem = warehouseItemOpt.get();
+            totalWeight += warehouseItem.getWeight() * requestedQuantity;
+            totalVolume += warehouseItem.getWidth() * warehouseItem.getHeight() * warehouseItem.getDepth() * requestedQuantity;
+            hasFragile = hasFragile || warehouseItem.getFragile();
+        }
+
+        return BookedProductsDto.builder()
+                .deliveryWeight(totalWeight)
+                .deliveryVolume(totalVolume)
+                .fragile(hasFragile)
+                .build();
     }
 
     @Override
-    public WarehouseCheckResponseDto checkAvailability(UUID productId, Long requestedQuantity) {
-        if (requestedQuantity == null) {
-            throw new InvalidQuantityException("Requested quantity cannot be null");
+    public void updateProductToWarehouse(AddProductToWarehouseRequestDto addDto) {
+
+        var warehouseItemOpt = warehouseRepository.findByProductId(addDto.getProductId());
+        if (warehouseItemOpt.isEmpty()) {
+            throw new IllegalArgumentException("Товар не найден на складе: " + addDto.getProductId());
         }
 
-        if (requestedQuantity <= 0) {
-            throw new InvalidQuantityException("Requested quantity must be positive");
-        }
+        var warehouseItem = warehouseItemOpt.get();
+        warehouseItem.setQuantity(warehouseItem.getQuantity() + addDto.getQuantity());
+        warehouseRepository.save(warehouseItem);
 
-        WarehouseItem item = warehouseRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found in warehouse"));
-
-        if (item.getQuantity() < requestedQuantity) {
-            throw new InsufficientStockException("Not enough stock in warehouse");
-        }
-
-        double totalVolume = item.getWidth() * item.getHeight() * item.getDepth() * requestedQuantity;
-        double totalWeight = item.getWeight() * requestedQuantity;
-
-        return new WarehouseCheckResponseDto(totalWeight, totalVolume, item.getFragile());
     }
 
     @Override
-    public WarehouseItemResponseDto updateProduct(UUID productId, WarehouseItemRequestDto dto) {
-        WarehouseItem item = warehouseRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
-
-        item.setFragile(dto.getFragile());
-        item.setWidth(dto.getWidth());
-        item.setHeight(dto.getHeight());
-        item.setDepth(dto.getDepth());
-        item.setWeight(dto.getWeight());
-        if (dto.getQuantity() != null) {
-            item.setQuantity(dto.getQuantity());
-        }
-        WarehouseItem updated = warehouseRepository.save(item);
-        return warehouseMapper.toDto(updated);
+    public AddressDto getWarehouseAddress() {
+        return AddressDto.builder()
+                .city("Москва")
+                .street("Ленинградский проспект")
+                .building("12А")
+                .postalCode("125040")
+                .build();
     }
 }

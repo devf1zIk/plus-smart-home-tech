@@ -1,17 +1,18 @@
 package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.dto.ProductRequestDto;
-import ru.yandex.practicum.dto.ProductResponseDto;
+import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.ProductState;
+import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.mapper.ProductMapper;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.repository.ProductRepository;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,58 +23,66 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper mapper;
 
     @Override
-    public List<ProductResponseDto> getAllActive() {
+    public Page<ProductDto> getProducts(ProductCategory category, Pageable pageable) {
         try {
-            List<Product> products = repository.findByStatus(ProductState.ACTIVE);
-            return mapper.toDtoList(products);
+            Page<Product> products;
+            if (category != null) {
+                products = repository.findByProductStateAndProductCategory(ProductState.ACTIVE, category, pageable);
+            } else {
+                products = repository.findByProductState(ProductState.ACTIVE, pageable);
+            }
+            return products.map(mapper::toDto);
         } catch (Exception e) {
-            throw new ProductOperationException("Ошибка при получении активных продуктов", e);
+            throw new ProductOperationException("Ошибка при получении списка продуктов", e);
         }
     }
 
     @Override
-    public ProductResponseDto getById(UUID id) {
-        Optional<Product> productOpt = repository.findById(id);
-        if (productOpt.isEmpty()) {
-            throw new ProductNotFoundException("Product not found with id: " + id);
-        }
-        return mapper.toDto(productOpt.get());
+    public ProductDto getProductById(UUID id) {
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
+        return mapper.toDto(product);
     }
 
     @Override
-    public ProductResponseDto create(ProductRequestDto dto) {
+    public ProductDto create(ProductDto dto) {
         try {
             Product product = mapper.toEntity(dto);
+            product.setProductState(ProductState.ACTIVE);
             Product saved = repository.save(product);
             return mapper.toDto(saved);
         } catch (Exception e) {
-            throw new ProductOperationException("Ошибка при создании продукта: " + dto.getName(), e);
+            throw new ProductOperationException("Ошибка при создании продукта: " + dto.getProductName(), e);
         }
     }
 
     @Override
-    public ProductResponseDto update(UUID id, ProductRequestDto dto) {
-        Optional<Product> productOpt = repository.findById(id);
-        if (productOpt.isEmpty()) {
-            throw new ProductNotFoundException("Product not found with id: " + id);
-        }
+    public ProductDto update(UUID id, ProductDto dto) {
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
 
-        Product product = productOpt.get();
         mapper.updateEntity(product, dto);
-
         Product updated = repository.save(product);
         return mapper.toDto(updated);
     }
 
     @Override
-    public void deactivate(UUID id) {
-        Optional<Product> productOpt = repository.findById(id);
-        if (productOpt.isEmpty()) {
-            throw new ProductNotFoundException("Product not found with id: " + id);
-        }
+    public Boolean deactivate(UUID id) {
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
 
-        Product product = productOpt.get();
-        product.setStatus(ProductState.DEACTIVATE);
+        product.setProductState(ProductState.DEACTIVATED);
         repository.save(product);
+        return true;
+    }
+
+    @Override
+    public Boolean updateQuantityState(UUID productId, QuantityState quantityState) {
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + productId));
+
+        product.setQuantityState(quantityState);
+        repository.save(product);
+        return true;
     }
 }

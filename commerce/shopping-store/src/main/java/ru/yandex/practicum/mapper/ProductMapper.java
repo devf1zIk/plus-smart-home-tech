@@ -1,67 +1,58 @@
 package ru.yandex.practicum.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.dto.ProductRequestDto;
-import ru.yandex.practicum.dto.ProductResponseDto;
+import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.enums.ProductState;
 import ru.yandex.practicum.model.Product;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class ProductMapper {
 
-    public Product toEntity(ProductRequestDto dto) {
+    public Product toEntity(ProductDto dto) {
         if (dto == null) {
             return null;
         }
 
         Product product = new Product();
-        product.setName(dto.getName());
+        product.setProductName(dto.getProductName());
         product.setDescription(dto.getDescription());
-        product.setAvailability(dto.getAvailability());
+        product.setImageSrc(dto.getImageSrc());
+        product.setQuantityState(dto.getQuantityState());
+        product.setProductCategory(dto.getProductCategory());
         product.setPrice(dto.getPrice());
-        product.setStatus(ProductState.ACTIVE);
+        product.setProductState(ProductState.ACTIVE);
 
         return product;
     }
 
-    public void updateEntity(Product product, ProductRequestDto dto) {
+    public void updateEntity(Product product, ProductDto dto) {
         if (product == null || dto == null) {
             return;
         }
 
-        product.setName(dto.getName());
+        product.setProductName(dto.getProductName());
         product.setDescription(dto.getDescription());
-        product.setAvailability(dto.getAvailability());
+        product.setImageSrc(dto.getImageSrc());
+        product.setQuantityState(dto.getQuantityState());
+        product.setProductCategory(dto.getProductCategory());
         product.setPrice(dto.getPrice());
     }
 
-    public ProductResponseDto toDto(Product product) {
+    public ProductDto toDto(Product product) {
         if (product == null) {
             return null;
         }
 
-        ProductResponseDto dto = new ProductResponseDto();
-        dto.setId(product.getId());
-        dto.setName(product.getName());
+        ProductDto dto = new ProductDto();
+        dto.setProductId(product.getProductId());
+        dto.setProductName(product.getProductName());
         dto.setDescription(product.getDescription());
-        dto.setAvailability(product.getAvailability());
+        dto.setImageSrc(product.getImageSrc());
+        dto.setQuantityState(product.getQuantityState());
+        dto.setProductCategory(product.getProductCategory());
         dto.setPrice(product.getPrice());
-        dto.setStatus(product.getStatus());
+        dto.setProductState(product.getProductState());
 
         return dto;
-    }
-
-    public List<ProductResponseDto> toDtoList(List<Product> products) {
-        if (products == null) {
-            return new ArrayList<>();
-        }
-
-        List<ProductResponseDto> list = new ArrayList<>();
-        for (Product p : products) {
-            list.add(toDto(p));
-        }
-        return list;
     }
 }

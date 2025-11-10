@@ -1,13 +1,16 @@
 package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.ShoppingStoreClient;
-import ru.yandex.practicum.dto.ProductRequestDto;
-import ru.yandex.practicum.dto.ProductResponseDto;
+import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.enums.ProductCategory;
+import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.service.ProductService;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -18,27 +21,36 @@ public class ShoppingStoreController implements ShoppingStoreClient {
     private final ProductService service;
 
     @GetMapping
-    public List<ProductResponseDto> getAll() {
-        return service.getAllActive();
+    public Page<ProductDto> getProducts(@RequestParam(required = false) ProductCategory category,
+                                        Pageable pageable) {
+        return service.getProducts(category, pageable);
     }
 
-    @GetMapping("/{id}")
-    public ProductResponseDto getById(@PathVariable UUID id) {
-        return service.getById(id);
+    @GetMapping("/{productId}")
+    public ProductDto getProductById(@PathVariable @NotNull UUID productId) {
+        return service.getProductById(productId);
     }
 
-    @PostMapping
-    public ProductResponseDto create(@Valid @RequestBody ProductRequestDto dto) {
+
+    @PutMapping
+    public ProductDto createProduct(@Valid @RequestBody ProductDto dto) {
         return service.create(dto);
     }
 
-    @PutMapping("/{id}")
-    public ProductResponseDto update(@PathVariable UUID id, @Valid @RequestBody ProductRequestDto dto) {
-        return service.update(id, dto);
+    @PostMapping("/{productId}")
+    public ProductDto updateProduct(@PathVariable UUID productId,
+                                    @Valid @RequestBody ProductDto dto) {
+        return service.update(productId, dto);
     }
 
-    @DeleteMapping("/{id}")
-    public void deactivate(@PathVariable UUID id) {
-        service.deactivate(id);
+    @PostMapping("/removeProductFromStore")
+    public Boolean deleteProduct(@RequestBody @NotNull UUID productId) {
+        return service.deactivate(productId);
+    }
+
+    @PostMapping("/quantityState")
+    public Boolean updateQuantityState(@RequestParam @NotNull UUID productId,
+                                       @RequestParam @NotNull QuantityState quantityState) {
+        return service.updateQuantityState(productId, quantityState);
     }
 }

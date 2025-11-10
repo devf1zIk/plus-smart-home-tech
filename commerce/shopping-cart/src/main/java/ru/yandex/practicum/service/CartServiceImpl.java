@@ -6,16 +6,11 @@ import ru.yandex.practicum.dto.CartItemRequestDto;
 import ru.yandex.practicum.dto.CartResponseDto;
 import ru.yandex.practicum.enums.CartState;
 import ru.yandex.practicum.exception.CartDeactivatedException;
-import ru.yandex.practicum.exception.CartItemNotFoundException;
 import ru.yandex.practicum.mapper.CartMapper;
 import ru.yandex.practicum.model.Cart;
-import ru.yandex.practicum.model.CartItem;
-import ru.yandex.practicum.repository.CartItemRepository;
 import ru.yandex.practicum.repository.CartRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -23,19 +18,16 @@ import java.util.UUID;
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
     private final CartMapper cartMapper;
 
     private Cart getOrCreateCart(String username) {
-        Optional<Cart> existing = cartRepository.findByUsername(username);
-        if (existing.isPresent()) {
-            return existing.get();
-        }
-
-        Cart cart = new Cart();
-        cart.setUsername(username);
-        cart.setStatus(CartState.ACTIVE);
-        return cartRepository.save(cart);
+        return cartRepository.findByUsername(username)
+                .orElseGet(() -> {
+                    Cart cart = new Cart();
+                    cart.setUsername(username);
+                    cart.setStatus(CartState.ACTIVE);
+                    return cartRepository.save(cart);
+                });
     }
 
     @Override
@@ -45,74 +37,56 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponseDto addItem(String username, CartItemRequestDto dto) {
+    public CartResponseDto addProduct(String username, Map<UUID, Long> products) {
         Cart cart = getOrCreateCart(username);
 
-        if (cart.getStatus() == CartState.DEACTIVATE) {
+        if (cart.getStatus() == CartState.DEACTIVATED) {
             throw new CartDeactivatedException();
         }
 
-        CartItem item = new CartItem();
-        item.setProductId(dto.getProductId());
-        item.setProductName(dto.getProductName());
-        item.setQuantity(dto.getQuantity());
-        item.setCart(cart);
+        products.forEach((productId, quantity) ->
+                cart.getProducts().merge(productId, quantity, Long::sum)
+        );
 
-        if (cart.getItems() == null) {
-            cart.setItems(new ArrayList<>());
-        }
-
-        cart.getItems().add(item);
-        cartItemRepository.save(item);
         cartRepository.save(cart);
-
         return cartMapper.toDto(cart);
     }
 
     @Override
-    public CartResponseDto removeItem(String username, UUID itemId) {
+    public CartResponseDto deleteProduct(String username, Set<UUID> productIds) {
         Cart cart = getOrCreateCart(username);
 
-        if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new CartItemNotFoundException(itemId);
+        for (UUID productId : productIds) {
+            cart.getProducts().remove(productId);
         }
 
-        CartItem target = null;
-        for (CartItem item : cart.getItems()) {
-            if (item.getId().equals(itemId)) {
-                target = item;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new CartItemNotFoundException(itemId);
-        }
-
-        cart.getItems().remove(target);
-        cartItemRepository.deleteById(itemId);
         cartRepository.save(cart);
-
         return cartMapper.toDto(cart);
     }
 
     @Override
     public CartResponseDto deactivateCart(String username) {
         Cart cart = getOrCreateCart(username);
-        cart.setStatus(CartState.DEACTIVATE);
+        cart.setStatus(CartState.DEACTIVATED);
         cartRepository.save(cart);
         return cartMapper.toDto(cart);
     }
 
     @Override
-    public void clearCart(String username) {
+    public CartResponseDto updateProductQuantity(String username, CartItemRequestDto requestDto) {
         Cart cart = getOrCreateCart(username);
 
-        if (cart.getItems() != null && !cart.getItems().isEmpty()) {
-            cartItemRepository.deleteAll(cart.getItems());
-            cart.getItems().clear();
+        if (!cart.getProducts().containsKey(requestDto.getProductId())) {
+            throw new IllegalArgumentException("Товар с id " + requestDto.getProductId() + " не найден в корзине");
+        }
+
+        if (requestDto.getQuantity() == 0) {
+            cart.getProducts().remove(requestDto.getProductId());
+        } else {
+            cart.getProducts().put(requestDto.getProductId(), requestDto.getQuantity());
         }
 
         cartRepository.save(cart);
+        return cartMapper.toDto(cart);
     }
 }

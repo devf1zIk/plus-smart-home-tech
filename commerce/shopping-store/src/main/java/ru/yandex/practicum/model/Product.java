@@ -2,6 +2,8 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
+import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.enums.ProductState;
 import java.math.BigDecimal;
@@ -15,21 +17,31 @@ import java.util.UUID;
 @Builder
 @Table(name = "product")
 public class Product {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @UuidGenerator
+    private UUID productId;
 
     @Column(nullable = false)
-    private String name;
+    private String productName;
 
+    @Column(nullable = false)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    private QuantityState availability;
+    private String imageSrc;
 
     @Enumerated(EnumType.STRING)
-    private ProductState status;
+    @Column(nullable = false, length = 20)
+    private QuantityState quantityState;
 
-    @Column(nullable = false,precision = 19,scale = 2)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductState productState;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductCategory productCategory;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 }

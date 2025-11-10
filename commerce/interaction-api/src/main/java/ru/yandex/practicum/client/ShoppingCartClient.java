@@ -4,23 +4,28 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.dto.CartItemRequestDto;
 import ru.yandex.practicum.dto.CartResponseDto;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @FeignClient(name = "shopping-cart")
 public interface ShoppingCartClient {
 
-    @GetMapping("/api/v1/shopping-cart/{username}")
-    CartResponseDto getCart(@PathVariable String username);
+    @GetMapping("/api/v1/shopping-cart")
+    CartResponseDto getCart(@RequestParam String username);
 
-    @PostMapping("/api/v1/shopping-cart/{username}/items")
-    CartResponseDto addItem(@PathVariable String username, @RequestBody CartItemRequestDto dto);
+    @PutMapping("/api/v1/shopping-cart")
+    CartResponseDto addProduct(@RequestParam String username,
+                               @RequestBody Map<UUID, Long> products);
 
-    @DeleteMapping("/api/v1/shopping-cart/{username}/items/{itemId}")
-    CartResponseDto removeItem(@PathVariable String username, @PathVariable UUID itemId);
+    @DeleteMapping("/api/v1/shopping-cart")
+    void deactivateCart(@RequestParam String username);
 
-    @PostMapping("/api/v1/shopping-cart/{username}/deactivate")
-    CartResponseDto deactivateCart(@PathVariable String username);
+    @PostMapping("/api/v1/shopping-cart/remove")
+    CartResponseDto deleteProduct(@RequestParam String username,
+                                  @RequestBody Set<UUID> productIds);
 
-    @DeleteMapping("/api/v1/shopping-cart/{username}/clear")
-    void clearCart(@PathVariable String username);
+    @PostMapping("/api/v1/shopping-cart/change-quantity")
+    CartResponseDto updateProductQuantity(@RequestParam String username,
+                                          @RequestBody CartItemRequestDto requestDto);
 }
