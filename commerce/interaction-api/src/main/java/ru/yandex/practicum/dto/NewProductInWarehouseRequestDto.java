@@ -1,6 +1,5 @@
 package ru.yandex.practicum.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -16,29 +15,12 @@ public class NewProductInWarehouseRequestDto {
     @NotNull(message = "ID продукта обязателен")
     UUID productId;
 
-    @NotBlank(message = "Название продукта обязательно")
-    String name;
-
-    @NotNull(message = "Ширина обязательна")
-    @Positive(message = "Ширина должна быть положительной")
-    Double width;
-
-    @NotNull(message = "Высота обязательна")
-    @Positive(message = "Высота должна быть положительной")
-    Double height;
-
-    @NotNull(message = "Длина обязательна")
-    @Positive(message = "Длина должна быть положительной")
-    Double length;
-
     @NotNull(message = "Вес обязателен")
     @Positive(message = "Вес должен быть положительным")
     Double weight;
 
-    @NotNull(message = "Признак хрупкости обязателен")
-    Boolean fragile;
+    @NotNull(message = "Размеры товара обязательны")
+    DimensionDto dimensionDTO;
 
-    @NotNull(message = "Количество обязательно")
-    @Positive(message = "Количество должно быть положительным")
-    Long quantity;
+    Boolean fragile;
 }

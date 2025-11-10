@@ -1,7 +1,7 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.util.UUID;
 
@@ -11,6 +11,7 @@ public class CartItemRequestDto {
     @NotNull
     private UUID productId;
 
-    @Positive
+    @NotNull(message = "Необходимо указать количество")
+    @Min(value = 1, message = "Минимальное количество равно 1")
     private Long quantity;
 }

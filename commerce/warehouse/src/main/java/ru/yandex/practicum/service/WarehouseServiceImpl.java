@@ -8,6 +8,8 @@ import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.model.WarehouseItem;
 import ru.yandex.practicum.repository.WarehouseRepository;
+import java.security.SecureRandom;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -17,17 +19,19 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
 
+    private static final String[] ADDRESSES =
+            new String[] {"ADDRESS_1", "ADDRESS_2"};
+
+    private static final String CURRENT_ADDRESS =
+            ADDRESSES[Random.from(new SecureRandom()).nextInt(0, ADDRESSES.length)];
+
     @Override
     public void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductDto) {
 
         WarehouseItem product = WarehouseItem.builder()
                 .productId(newProductDto.getProductId())
-                .width(newProductDto.getWidth())
-                .height(newProductDto.getHeight())
-                .depth(newProductDto.getLength())
                 .weight(newProductDto.getWeight())
                 .fragile(newProductDto.getFragile())
-                .quantity(newProductDto.getQuantity())
                 .build();
 
         warehouseRepository.save(product);
@@ -95,10 +99,11 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     public AddressDto getWarehouseAddress() {
         return AddressDto.builder()
-                .city("Москва")
-                .street("Ленинградский проспект")
-                .building("12А")
-                .postalCode("125040")
+                .country(CURRENT_ADDRESS)
+                .city(CURRENT_ADDRESS)
+                .street(CURRENT_ADDRESS)
+                .building(CURRENT_ADDRESS)
+                .postalCode(CURRENT_ADDRESS)
                 .build();
     }
 }
