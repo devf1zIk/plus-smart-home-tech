@@ -71,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
 
-        product.setProductState(ProductState.DEACTIVATED);
+        product.setProductState(ProductState.DEACTIVATE);
         repository.save(product);
         return true;
     }
