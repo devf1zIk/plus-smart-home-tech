@@ -20,7 +20,7 @@ public class NewProductWarehouseRequestDto {
     Double weight;
 
     @NotNull(message = "Размеры товара обязательны")
-    DimensionDto dimensionDTO;
+    DimensionDto dimension;
 
     Boolean fragile;
 }

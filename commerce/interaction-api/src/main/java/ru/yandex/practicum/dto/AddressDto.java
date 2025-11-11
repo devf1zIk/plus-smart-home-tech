@@ -13,6 +13,6 @@ public class AddressDto {
     String country;
     String city;
     String street;
-    String building;
-    String postalCode;
+    String house;
+    String flat;
 }

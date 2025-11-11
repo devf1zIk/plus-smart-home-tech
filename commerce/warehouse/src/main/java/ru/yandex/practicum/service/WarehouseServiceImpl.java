@@ -98,22 +98,12 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public AddressDto getWarehouseAddress() {
-        return switch (CURRENT_ADDRESS) {
-            case "ADDRESS_1" -> AddressDto.builder()
-                    .country("Россия")
-                    .city("Москва")
-                    .street("Ленинский проспект")
-                    .building("123")
-                    .postalCode("119991")
-                    .build();
-            case "ADDRESS_2" -> AddressDto.builder()
-                    .country("Россия")
-                    .city("Санкт-Петербург")
-                    .street("Невский проспект")
-                    .building("456")
-                    .postalCode("191025")
-                    .build();
-            default -> throw new IllegalStateException("Unknown address: " + CURRENT_ADDRESS);
-        };
+        return AddressDto.builder()
+                .country(CURRENT_ADDRESS)
+                .city(CURRENT_ADDRESS)
+                .street(CURRENT_ADDRESS)
+                .house(CURRENT_ADDRESS)
+                .flat(CURRENT_ADDRESS)
+                .build();
     }
 }
