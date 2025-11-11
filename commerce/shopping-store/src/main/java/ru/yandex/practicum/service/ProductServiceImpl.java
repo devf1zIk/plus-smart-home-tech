@@ -13,6 +13,9 @@ import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.mapper.ProductMapper;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.repository.ProductRepository;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -22,7 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final ProductMapper mapper;
 
-    public Page<ProductDto> getProducts(ProductCategory category, Pageable pageable) {
+    public Map<String, Object> getProducts(ProductCategory category, Pageable pageable) {
         try {
             Page<Product> products;
             if (category != null) {
@@ -30,7 +33,25 @@ public class ProductServiceImpl implements ProductService {
             } else {
                 products = repository.findByProductState(ProductState.ACTIVE, pageable);
             }
-            return products.map(mapper::toDto);
+
+            List<ProductDto> content = products.getContent().stream()
+                    .map(mapper::toDto)
+                    .toList();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("content", content);
+            response.put("pageable", Map.of(
+                    "pageNumber", products.getNumber(),
+                    "pageSize", products.getSize(),
+                    "sort", products.getSort().toString()
+            ));
+            response.put("totalElements", products.getTotalElements());
+            response.put("totalPages", products.getTotalPages());
+            response.put("last", products.isLast());
+            response.put("first", products.isFirst());
+            response.put("numberOfElements", products.getNumberOfElements());
+
+            return response;
         } catch (Exception e) {
             throw new ProductOperationException("Ошибка при получении списка продуктов");
         }
