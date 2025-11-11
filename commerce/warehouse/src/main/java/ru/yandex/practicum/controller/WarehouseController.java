@@ -16,8 +16,8 @@ public class WarehouseController implements WarehouseClient {
 
     @Override
     @PutMapping
-    public void addNewProductToWarehouse(@RequestBody @Valid NewProductInWarehouseRequestDto newProductInWarehouseRequestDto) {
-        warehouseService.addNewProductToWarehouse(newProductInWarehouseRequestDto);
+    public void ProductToWarehouse(@RequestBody @Valid NewProductWarehouseRequestDto newProductWarehouseRequestDto) {
+        warehouseService.addNewProductToWarehouse(newProductWarehouseRequestDto);
     }
 
     @Override
@@ -28,8 +28,8 @@ public class WarehouseController implements WarehouseClient {
 
     @Override
     @PostMapping("/add")
-    public void updateProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequestDto addProductToWarehouseRequestDto) {
-        warehouseService.updateProductToWarehouse(addProductToWarehouseRequestDto);
+    public void updateProductToWarehouse(@RequestBody @Valid ProductWarehouseRequestDto productWarehouseRequestDto) {
+        warehouseService.updateProductToWarehouse(productWarehouseRequestDto);
     }
 
     @Override

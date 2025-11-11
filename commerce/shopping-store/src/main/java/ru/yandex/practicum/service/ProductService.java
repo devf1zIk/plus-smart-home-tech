@@ -15,7 +15,7 @@ public interface ProductService {
 
     ProductDto create(ProductDto dto);
 
-    ProductDto update(UUID id, ProductDto dto);
+    ProductDto update(ProductDto dto);
 
     Boolean deactivate(UUID id);
 

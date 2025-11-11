@@ -22,7 +22,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final ProductMapper mapper;
 
-    @Override
     public Page<ProductDto> getProducts(ProductCategory category, Pageable pageable) {
         try {
             Page<Product> products;
@@ -37,14 +36,12 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    @Override
     public ProductDto getProductById(UUID id) {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
         return mapper.toDto(product);
     }
 
-    @Override
     public ProductDto create(ProductDto dto) {
         try {
             Product product = mapper.toEntity(dto);
@@ -56,17 +53,15 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    @Override
-    public ProductDto update(UUID id, ProductDto dto) {
-        Product product = repository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
+    public ProductDto update(ProductDto dto) {
+        Product product = repository.findById(dto.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + dto.getProductId()));
 
         mapper.updateEntity(product, dto);
         Product updated = repository.save(product);
         return mapper.toDto(updated);
     }
 
-    @Override
     public Boolean deactivate(UUID id) {
         Product product = repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + id));
@@ -76,7 +71,6 @@ public class ProductServiceImpl implements ProductService {
         return true;
     }
 
-    @Override
     public Boolean updateQuantityState(SetQuantityDto setQuantityDto) {
         Product product = repository.findById(setQuantityDto.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + setQuantityDto.getProductId()));

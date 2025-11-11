@@ -4,11 +4,11 @@ import ru.yandex.practicum.dto.*;
 
 public interface WarehouseService {
 
-    void addNewProductToWarehouse(NewProductInWarehouseRequestDto newProductInWarehouseRequestDto);
+    void addNewProductToWarehouse(NewProductWarehouseRequestDto newProductWarehouseRequestDto);
 
     BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto);
 
-    void updateProductToWarehouse(AddProductToWarehouseRequestDto addProductToWarehouseRequestDto);
+    void updateProductToWarehouse(ProductWarehouseRequestDto productWarehouseRequestDto);
 
     AddressDto getWarehouseAddress();
 }

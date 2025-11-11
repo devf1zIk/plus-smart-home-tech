@@ -20,16 +20,16 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     private final ProductService service;
 
-    @Override
     @GetMapping
-    public Page<ProductDto> getProducts(@RequestParam ProductCategory category,
+    @Override
+    public Page<ProductDto> getProducts(@RequestParam("category") ProductCategory category,
                                         Pageable pageable) {
         return service.getProducts(category, pageable);
     }
 
     @Override
     @GetMapping("/{productId}")
-    public ProductDto getProductById(@PathVariable @NotNull UUID productId) {
+    public ProductDto getProductById(@PathVariable UUID productId) {
         return service.getProductById(productId);
     }
 
@@ -39,10 +39,10 @@ public class ShoppingStoreController implements ShoppingStoreClient {
         return service.create(dto);
     }
 
-    @PutMapping("/{productId}")
-    public ProductDto updateProduct(@PathVariable @NotNull UUID productId,
-                                    @Valid @RequestBody ProductDto dto) {
-        return service.update(productId, dto);
+    @Override
+    @PostMapping
+    public ProductDto updateProduct(@Valid @RequestBody ProductDto dto) {
+        return service.update(dto);
     }
 
     @Override
