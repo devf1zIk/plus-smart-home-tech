@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface ShoppingStoreClient {
 
     @GetMapping("/api/v1/shopping-store")
-    Page<ProductDto> getProducts(@RequestParam("category") ProductCategory category,
+    Page<ProductDto> getProducts(@RequestParam(value = "category") ProductCategory category,
                                  Pageable pageable);
 
     @GetMapping("/api/v1/shopping-store/{productId}")

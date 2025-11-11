@@ -32,6 +32,9 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .productId(newProductDto.getProductId())
                 .weight(newProductDto.getWeight())
                 .fragile(newProductDto.getFragile())
+                .depth(newProductDto.getDimension().getDepth())
+                .height(newProductDto.getDimension().getHeight())
+                .width(newProductDto.getDimension().getWidth())
                 .build();
 
         warehouseRepository.save(product);
