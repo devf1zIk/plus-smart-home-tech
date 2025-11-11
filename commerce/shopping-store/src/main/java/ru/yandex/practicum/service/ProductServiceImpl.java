@@ -5,9 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.ProductState;
-import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.mapper.ProductMapper;
@@ -77,11 +77,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Boolean updateQuantityState(UUID productId, QuantityState quantityState) {
-        Product product = repository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + productId));
+    public Boolean updateQuantityState(SetQuantityDto setQuantityDto) {
+        Product product = repository.findById(setQuantityDto.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + setQuantityDto.getProductId()));
 
-        product.setQuantityState(quantityState);
+        product.setQuantityState(setQuantityDto.getQuantityState());
         repository.save(product);
         return true;
     }

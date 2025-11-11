@@ -19,28 +19,33 @@ public class ShoppingCartController implements ShoppingCartClient {
 
     private final CartService cartService;
 
+    @Override
     @GetMapping
     public CartResponseDto getCart(@RequestParam String username) {
         return cartService.getCart(username);
     }
 
+    @Override
     @PutMapping
     public CartResponseDto addProduct(@RequestParam String username,
                                       @RequestBody @NotNull Map<UUID, Long> products) {
         return cartService.addProduct(username, products);
     }
 
+    @Override
     @DeleteMapping
     public void deactivateCart(@RequestParam String username) {
         cartService.deactivateCart(username);
     }
 
+    @Override
     @PostMapping("/remove")
     public CartResponseDto deleteProduct(@RequestParam String username,
                                          @RequestBody Set<UUID> productIds) {
         return cartService.deleteProduct(username, productIds);
     }
 
+    @Override
     @PostMapping("/change-quantity")
     public CartResponseDto updateProductQuantity(@RequestParam String username,
                                                  @RequestBody @Valid CartItemRequestDto requestDto) {

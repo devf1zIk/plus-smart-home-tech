@@ -3,8 +3,8 @@ package ru.yandex.practicum.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
-import ru.yandex.practicum.enums.QuantityState;
 import java.util.UUID;
 
 public interface ProductService {
@@ -19,5 +19,5 @@ public interface ProductService {
 
     Boolean deactivate(UUID id);
 
-    Boolean updateQuantityState(UUID productId, QuantityState quantityState);
+    Boolean updateQuantityState(SetQuantityDto setQuantityDto);
 }

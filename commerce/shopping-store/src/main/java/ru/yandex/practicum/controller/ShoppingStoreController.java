@@ -8,8 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.ShoppingStoreClient;
 import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
-import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.service.ProductService;
 import java.util.UUID;
 
@@ -53,8 +53,7 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @Override
     @PostMapping("/quantityState")
-    public Boolean updateQuantityState(@RequestParam @NotNull UUID productId,
-                                       @RequestParam @NotNull QuantityState quantityState) {
-        return service.updateQuantityState(productId, quantityState);
+    public Boolean updateQuantityState(@RequestParam @NotNull SetQuantityDto setQuantityDto) {
+        return service.updateQuantityState(setQuantityDto);
     }
 }
