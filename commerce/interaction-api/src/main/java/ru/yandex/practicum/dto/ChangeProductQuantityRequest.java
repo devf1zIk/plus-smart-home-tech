@@ -17,6 +17,7 @@ public class ChangeProductQuantityRequest {
     @NotNull
     private UUID productId;
 
-    @Min(0)
+    @Min(1)
+    @Min(value = 1, message = "Минимальное количество товара — 1")
     private Long quantity;
 }

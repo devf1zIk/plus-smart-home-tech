@@ -47,7 +47,7 @@ public class ShoppingCartController implements ShoppingCartClient {
     @Override
     @PostMapping("/change-quantity")
     public ShoppingCartDto changeQuantity(@RequestParam String username,
-                                          @RequestBody @Valid ChangeProductQuantityRequest requestDto) {
+                                          @RequestBody ChangeProductQuantityRequest requestDto) {
         return cartService.updateProductQuantity(username, requestDto);
     }
 }
