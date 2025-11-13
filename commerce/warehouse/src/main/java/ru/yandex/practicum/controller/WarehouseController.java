@@ -22,8 +22,8 @@ public class WarehouseController implements WarehouseClient {
 
     @Override
     @PostMapping("/check")
-    public BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto ShoppingCartDto) {
-        return warehouseService.checkProductQuantityInWarehouse(ShoppingCartDto);
+    public BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto shoppingCartDto) {
+        return warehouseService.checkProductQuantityInWarehouse(shoppingCartDto);
     }
 
     @Override

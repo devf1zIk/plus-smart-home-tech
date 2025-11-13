@@ -22,7 +22,7 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @GetMapping
     @Override
-    public Page<ProductDto> getProducts(@RequestParam("category") ProductCategory category,
+    public Page<ProductDto> getProducts(@RequestParam(value = "category", required = false) ProductCategory category,
                                         Pageable pageable) {
         return productService.getProducts(category, pageable);
     }
