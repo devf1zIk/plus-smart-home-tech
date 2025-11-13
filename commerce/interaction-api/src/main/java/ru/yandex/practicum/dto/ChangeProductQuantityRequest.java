@@ -19,5 +19,5 @@ public class ChangeProductQuantityRequest {
 
     @Min(1)
     @Min(value = 1, message = "Минимальное количество товара — 1")
-    private Long quantity;
+    private Long newQuantity;
 }

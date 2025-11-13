@@ -81,7 +81,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = getOrCreateCart(username);
 
         UUID productId = requestDto.getProductId();
-        Long newQuantity = requestDto.getQuantity();
+        Long newQuantity = requestDto.getNewQuantity();
 
         if (!cart.getProducts().containsKey(productId)) {
             throw new CartNotFoundException("Товар не найден в корзине: " + productId);
