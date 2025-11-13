@@ -2,20 +2,19 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.dto.ProductDto;
-import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.ProductState;
+import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.exception.ProductNotFoundException;
 import ru.yandex.practicum.exception.ProductOperationException;
 import ru.yandex.practicum.mapper.ProductMapper;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.repository.ProductRepository;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,7 +24,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final ProductMapper mapper;
 
-    public Map<String, Object> getProducts(ProductCategory category, Pageable pageable) {
+    @Override
+    public Page<ProductDto> getProducts(ProductCategory category, Pageable pageable) {
         try {
             Page<Product> products;
             if (category != null) {
@@ -38,20 +38,7 @@ public class ProductServiceImpl implements ProductService {
                     .map(mapper::toDto)
                     .toList();
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("content", content);
-            response.put("pageable", Map.of(
-                    "pageNumber", products.getNumber(),
-                    "pageSize", products.getSize(),
-                    "sort", products.getSort().toString()
-            ));
-            response.put("totalElements", products.getTotalElements());
-            response.put("totalPages", products.getTotalPages());
-            response.put("last", products.isLast());
-            response.put("first", products.isFirst());
-            response.put("numberOfElements", products.getNumberOfElements());
-
-            return response;
+            return new PageImpl<>(content, pageable, products.getTotalElements());
         } catch (Exception e) {
             throw new ProductOperationException("Ошибка при получении списка продуктов");
         }
@@ -92,11 +79,11 @@ public class ProductServiceImpl implements ProductService {
         return true;
     }
 
-    public Boolean updateQuantityState(SetQuantityDto setQuantityDto) {
-        Product product = repository.findById(setQuantityDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + setQuantityDto.getProductId()));
+    public Boolean updateQuantityState(UUID productId, QuantityState quantityState) {
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден с id: " + productId));
 
-        product.setQuantityState(setQuantityDto.getQuantityState());
+        product.setQuantityState(quantityState);
         repository.save(product);
         return true;
     }

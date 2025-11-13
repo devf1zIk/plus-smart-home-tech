@@ -27,7 +27,7 @@ public class WarehouseItem {
     private Double weight;
 
     @Column(nullable = false)
-    private Long quantity;
+    private Long quantity = 0L;
 
     @Column(nullable = false)
     private Double width;

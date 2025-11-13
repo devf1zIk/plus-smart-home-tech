@@ -1,20 +1,20 @@
 package ru.yandex.practicum.service;
 
-import ru.yandex.practicum.dto.CartItemRequestDto;
-import ru.yandex.practicum.dto.CartResponseDto;
+import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public interface CartService {
 
-    CartResponseDto getCart(String username);
+    ShoppingCartDto getCart(String username);
 
-    CartResponseDto addProduct(String username, Map<UUID, Long> products);
+    ShoppingCartDto addProducts(String username, Map<UUID, Long> products);
 
-    CartResponseDto deleteProduct(String username, Set<UUID> productIds);
+    ShoppingCartDto removeProducts(String username, List<UUID> productIds);
 
-    CartResponseDto deactivateCart(String username);
+    ShoppingCartDto deactivate(String username);
 
-    CartResponseDto updateProductQuantity(String username, CartItemRequestDto requestDto);
+    ShoppingCartDto updateProductQuantity(String username, ChangeProductQuantityRequest requestDto);
 }

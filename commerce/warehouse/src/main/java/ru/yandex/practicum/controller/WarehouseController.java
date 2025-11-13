@@ -22,14 +22,14 @@ public class WarehouseController implements WarehouseClient {
 
     @Override
     @PostMapping("/check")
-    public BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto shoppingCartDto) {
-        return warehouseService.checkProductQuantityInWarehouse(shoppingCartDto);
+    public BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto ShoppingCartDto) {
+        return warehouseService.checkProductQuantityInWarehouse(ShoppingCartDto);
     }
 
     @Override
     @PostMapping("/add")
-    public void updateProductToWarehouse(@RequestBody @Valid ProductWarehouseRequestDto productWarehouseRequestDto) {
-        warehouseService.updateProductToWarehouse(productWarehouseRequestDto);
+    public void updateProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequestDto addProductToWarehouseRequestDto) {
+        warehouseService.updateProductToWarehouse(addProductToWarehouseRequestDto);
     }
 
     @Override

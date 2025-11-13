@@ -1,15 +1,16 @@
 package ru.yandex.practicum.service;
 
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.dto.ProductDto;
-import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
-import java.util.Map;
+import ru.yandex.practicum.enums.QuantityState;
 import java.util.UUID;
 
 public interface ProductService {
 
-    Map<String, Object> getProducts(ProductCategory category, Pageable pageable);
+    Page<ProductDto> getProducts(ProductCategory category, Pageable pageable);
 
     ProductDto getProductById(UUID id);
 
@@ -19,5 +20,5 @@ public interface ProductService {
 
     Boolean deactivate(UUID id);
 
-    Boolean updateQuantityState(SetQuantityDto setQuantityDto);
+    Boolean updateQuantityState(@Valid UUID productId, QuantityState quantityState);
 }

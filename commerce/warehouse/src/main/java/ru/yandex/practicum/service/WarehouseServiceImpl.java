@@ -27,6 +27,10 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public void addNewProductToWarehouse(NewProductWarehouseRequestDto newProductDto) {
+        if (newProductDto == null) {
+            throw new ProductOperationException("Данные о новом товаре не могут быть пустыми");
+        }
+        Long quantity = (newProductDto.getQuantity() != null) ? newProductDto.getQuantity() : 0L;
 
         WarehouseItem product = WarehouseItem.builder()
                 .productId(newProductDto.getProductId())
@@ -35,6 +39,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .depth(newProductDto.getDimension().getDepth())
                 .height(newProductDto.getDimension().getHeight())
                 .width(newProductDto.getDimension().getWidth())
+                .quantity(quantity)
                 .build();
 
         warehouseRepository.save(product);
@@ -76,7 +81,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
-    public void updateProductToWarehouse(ProductWarehouseRequestDto addDto) {
+    public void updateProductToWarehouse(AddProductToWarehouseRequestDto addDto) {
         if (addDto == null) {
             throw new ProductNotFoundException("Данные для обновления товара не могут быть пустыми");
         }

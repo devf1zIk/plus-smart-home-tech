@@ -44,8 +44,9 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(CartItemNotFoundException.class)
-    public Map<String, Object> handleCartItemNotFound(CartItemNotFoundException ex) {
+    @ExceptionHandler(CartNotFoundException.class)
+    public Map<String, Object> handleCartItemNotFound(CartNotFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Cart Item Not Found", ex.getMessage());
     }
+
 }

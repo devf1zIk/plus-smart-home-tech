@@ -3,14 +3,14 @@ package ru.yandex.practicum.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.ShoppingStoreClient;
 import ru.yandex.practicum.dto.ProductDto;
-import ru.yandex.practicum.dto.SetQuantityDto;
 import ru.yandex.practicum.enums.ProductCategory;
+import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.service.ProductService;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -22,8 +22,8 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @GetMapping
     @Override
-    public Map<String, Object> getProducts(@RequestParam("category") ProductCategory category,
-                                           Pageable pageable) {
+    public Page<ProductDto> getProducts(@RequestParam("category") ProductCategory category,
+                                        Pageable pageable) {
         return service.getProducts(category, pageable);
     }
 
@@ -35,13 +35,13 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @Override
     @PutMapping
-    public ProductDto createProduct(@Valid @RequestBody ProductDto dto) {
+    public ProductDto createProduct(@RequestBody @Valid ProductDto dto) {
         return service.create(dto);
     }
 
     @Override
     @PostMapping
-    public ProductDto updateProduct(@Valid @RequestBody ProductDto dto) {
+    public ProductDto updateProduct(@RequestBody @Valid ProductDto dto) {
         return service.update(dto);
     }
 
@@ -53,7 +53,8 @@ public class ShoppingStoreController implements ShoppingStoreClient {
 
     @Override
     @PostMapping("/quantityState")
-    public Boolean updateQuantityState(@RequestParam @NotNull SetQuantityDto setQuantityDto) {
-        return service.updateQuantityState(setQuantityDto);
+    public Boolean updateQuantityState(@RequestParam @NotNull UUID productId,
+                                       @RequestParam @NotNull QuantityState quantityState) {
+        return service.updateQuantityState(productId,quantityState);
     }
 }

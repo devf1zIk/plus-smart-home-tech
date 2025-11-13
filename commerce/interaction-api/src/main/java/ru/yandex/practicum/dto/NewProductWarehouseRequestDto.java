@@ -2,6 +2,7 @@ package ru.yandex.practicum.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,9 @@ public class NewProductWarehouseRequestDto {
 
     @NotNull(message = "Размеры товара обязательны")
     DimensionDto dimension;
+
+    @PositiveOrZero
+    private Long quantity;
 
     Boolean fragile;
 }

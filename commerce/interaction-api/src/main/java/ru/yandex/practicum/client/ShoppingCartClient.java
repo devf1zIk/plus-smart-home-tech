@@ -2,30 +2,31 @@ package ru.yandex.practicum.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.CartItemRequestDto;
-import ru.yandex.practicum.dto.CartResponseDto;
+import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @FeignClient(name = "shopping-cart")
 public interface ShoppingCartClient {
 
     @GetMapping("/api/v1/shopping-cart")
-    CartResponseDto getCart(@RequestParam String username);
+    ShoppingCartDto getCart(@RequestParam String username);
 
     @PutMapping("/api/v1/shopping-cart")
-    CartResponseDto addProduct(@RequestParam String username,
-                               @RequestBody Map<UUID, Long> products);
+    ShoppingCartDto addProducts(@RequestParam String username,
+                                @RequestBody Map<UUID, Long> products);
 
     @DeleteMapping("/api/v1/shopping-cart")
-    void deactivateCart(@RequestParam String username);
+    ShoppingCartDto deactivate(@RequestParam(value = "username") String username);
 
     @PostMapping("/api/v1/shopping-cart/remove")
-    CartResponseDto deleteProduct(@RequestParam String username,
-                                  @RequestBody Set<UUID> productIds);
+    ShoppingCartDto removeProducts(@RequestParam String username,
+                                   @RequestBody List<UUID> productIds);
 
     @PostMapping("/api/v1/shopping-cart/change-quantity")
-    CartResponseDto updateProductQuantity(@RequestParam String username,
-                                          @RequestBody CartItemRequestDto requestDto);
+    ShoppingCartDto changeQuantity(@RequestParam(value = "username") String username,
+                                   @RequestBody ChangeProductQuantityRequest requestDto);
+
 }

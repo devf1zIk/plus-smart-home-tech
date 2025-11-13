@@ -1,7 +1,7 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +12,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductWarehouseRequestDto {
+public class AddProductToWarehouseRequestDto {
 
     @NotNull(message = "ID продукта обязателен")
     UUID productId;
 
     @NotNull(message = "Количество обязательно")
-    @Positive(message = "Количество должно быть положительным")
+    @Min(value = 1, message = "Минимальное количество равно 1")
     Long quantity;
 }

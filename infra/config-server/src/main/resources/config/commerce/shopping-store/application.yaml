@@ -25,3 +25,7 @@ logging:
   level:
     root: INFO
     ru.yandex.practicum: DEBUG
+management:
+  health:
+    circuitbreakers:
+      enabled: true

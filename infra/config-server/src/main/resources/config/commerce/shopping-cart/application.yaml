@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/smarthome
     username: postgres
-    password: password
+    password: karakesek
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,8 +20,11 @@ spring:
       continue-on-error: false
       separator: ";"
       encoding: UTF-8
-
 logging:
   level:
     root: INFO
     ru.yandex.practicum: DEBUG
+management:
+  health:
+    circuitbreakers:
+      enabled:true

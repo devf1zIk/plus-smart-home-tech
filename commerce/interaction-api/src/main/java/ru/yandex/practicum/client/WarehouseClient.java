@@ -15,7 +15,7 @@ public interface WarehouseClient {
     BookedProductsDto checkProductQuantityInWarehouse(@RequestBody @Valid ShoppingCartDto shoppingCartDto);
 
     @PostMapping("/api/v1/warehouse/add")
-    void updateProductToWarehouse(@RequestBody @Valid ProductWarehouseRequestDto productWarehouseRequestDto);
+    void updateProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequestDto addProductToWarehouseRequestDto);
 
     @GetMapping("/api/v1/warehouse/address")
     AddressDto getWarehouseAddress();

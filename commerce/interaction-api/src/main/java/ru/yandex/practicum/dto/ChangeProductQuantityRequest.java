@@ -1,22 +1,22 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.enums.QuantityState;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SetQuantityDto {
+public class ChangeProductQuantityRequest {
 
     @NotNull
-    UUID productId;
+    private UUID productId;
 
-    @NotNull
-    QuantityState quantityState;
+    @Min(0)
+    private Long quantity;
 }

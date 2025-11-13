@@ -2,10 +2,11 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.dto.CartItemRequestDto;
-import ru.yandex.practicum.dto.CartResponseDto;
+import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.enums.CartState;
 import ru.yandex.practicum.exception.CartDeactivatedException;
+import ru.yandex.practicum.exception.CartNotFoundException;
 import ru.yandex.practicum.mapper.CartMapper;
 import ru.yandex.practicum.model.Cart;
 import ru.yandex.practicum.repository.CartRepository;
@@ -31,29 +32,32 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponseDto getCart(String username) {
+    public ShoppingCartDto getCart(String username) {
         Cart cart = getOrCreateCart(username);
-        return cartMapper.toDto(cart);
+        return cartMapper.toCartItemRequestDto(cart);
     }
 
     @Override
-    public CartResponseDto addProduct(String username, Map<UUID, Long> products) {
+    public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
         Cart cart = getOrCreateCart(username);
 
         if (cart.getStatus() == CartState.DEACTIVATE) {
             throw new CartDeactivatedException();
         }
 
-        products.forEach((productId, quantity) ->
-                cart.getProducts().merge(productId, quantity, Long::sum)
-        );
+        for (Map.Entry<UUID, Long> entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long quantity = entry.getValue();
+
+            cart.getProducts().merge(productId, quantity, Long::sum);
+        }
 
         cartRepository.save(cart);
-        return cartMapper.toDto(cart);
+        return cartMapper.toCartItemRequestDto(cart);
     }
 
     @Override
-    public CartResponseDto deleteProduct(String username, Set<UUID> productIds) {
+    public ShoppingCartDto removeProducts(String username, List<UUID> productIds) {
         Cart cart = getOrCreateCart(username);
 
         for (UUID productId : productIds) {
@@ -61,32 +65,35 @@ public class CartServiceImpl implements CartService {
         }
 
         cartRepository.save(cart);
-        return cartMapper.toDto(cart);
+        return cartMapper.toCartItemRequestDto(cart);
     }
 
     @Override
-    public CartResponseDto deactivateCart(String username) {
+    public ShoppingCartDto deactivate(String username) {
         Cart cart = getOrCreateCart(username);
         cart.setStatus(CartState.DEACTIVATE);
         cartRepository.save(cart);
-        return cartMapper.toDto(cart);
+        return cartMapper.toCartItemRequestDto(cart);
     }
 
     @Override
-    public CartResponseDto updateProductQuantity(String username, CartItemRequestDto requestDto) {
+    public ShoppingCartDto updateProductQuantity(String username, ChangeProductQuantityRequest requestDto) {
         Cart cart = getOrCreateCart(username);
 
-        if (!cart.getProducts().containsKey(requestDto.getProductId())) {
-            throw new IllegalArgumentException("Товар с id " + requestDto.getProductId() + " не найден в корзине");
+        UUID productId = requestDto.getProductId();
+        Long newQuantity = requestDto.getQuantity();
+
+        if (!cart.getProducts().containsKey(productId)) {
+            throw new CartNotFoundException("Товар не найден в корзине: " + productId);
         }
 
-        if (requestDto.getQuantity() == 0) {
-            cart.getProducts().remove(requestDto.getProductId());
+        if (newQuantity == null || newQuantity <= 0) {
+            cart.getProducts().remove(productId);
         } else {
-            cart.getProducts().put(requestDto.getProductId(), requestDto.getQuantity());
+            cart.getProducts().put(productId, newQuantity);
         }
 
         cartRepository.save(cart);
-        return cartMapper.toDto(cart);
+        return cartMapper.toCartItemRequestDto(cart);
     }
 }

@@ -6,9 +6,9 @@ public interface WarehouseService {
 
     void addNewProductToWarehouse(NewProductWarehouseRequestDto newProductWarehouseRequestDto);
 
-    BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto);
+    BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto ShoppingCartDto);
 
-    void updateProductToWarehouse(ProductWarehouseRequestDto productWarehouseRequestDto);
+    void updateProductToWarehouse(AddProductToWarehouseRequestDto addProductToWarehouseRequestDto);
 
     AddressDto getWarehouseAddress();
 }

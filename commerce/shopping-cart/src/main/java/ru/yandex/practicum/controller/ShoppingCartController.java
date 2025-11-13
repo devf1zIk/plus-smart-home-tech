@@ -1,15 +1,14 @@
 package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.ShoppingCartClient;
-import ru.yandex.practicum.dto.CartItemRequestDto;
-import ru.yandex.practicum.dto.CartResponseDto;
+import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.service.CartService;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -21,34 +20,34 @@ public class ShoppingCartController implements ShoppingCartClient {
 
     @Override
     @GetMapping
-    public CartResponseDto getCart(@RequestParam String username) {
+    public ShoppingCartDto getCart(@RequestParam String username) {
         return cartService.getCart(username);
     }
 
     @Override
     @PutMapping
-    public CartResponseDto addProduct(@RequestParam String username,
-                                      @RequestBody @NotNull Map<UUID, Long> products) {
-        return cartService.addProduct(username, products);
+    public ShoppingCartDto addProducts(@RequestParam String username,
+                                      @RequestBody Map<UUID, Long> products) {
+        return cartService.addProducts(username, products);
     }
 
     @Override
     @DeleteMapping
-    public void deactivateCart(@RequestParam String username) {
-        cartService.deactivateCart(username);
+    public ShoppingCartDto deactivate(@RequestParam String username) {
+        return cartService.deactivate(username);
     }
 
     @Override
     @PostMapping("/remove")
-    public CartResponseDto deleteProduct(@RequestParam String username,
-                                         @RequestBody Set<UUID> productIds) {
-        return cartService.deleteProduct(username, productIds);
+    public ShoppingCartDto removeProducts(@RequestParam String username,
+                                         @RequestBody List<UUID> productIds) {
+        return cartService.removeProducts(username, productIds);
     }
 
     @Override
     @PostMapping("/change-quantity")
-    public CartResponseDto updateProductQuantity(@RequestParam String username,
-                                                 @RequestBody @Valid CartItemRequestDto requestDto) {
+    public ShoppingCartDto changeQuantity(@RequestParam String username,
+                                          @RequestBody @Valid ChangeProductQuantityRequest requestDto) {
         return cartService.updateProductQuantity(username, requestDto);
     }
 }
