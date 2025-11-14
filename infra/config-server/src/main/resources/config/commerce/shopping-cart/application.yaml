@@ -20,6 +20,8 @@ spring:
       continue-on-error: false
       separator: ";"
       encoding: UTF-8
+server:
+  port: 0
 logging:
   level:
     root: INFO

@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface ShoppingCartClient {
 
     @GetMapping("/api/v1/shopping-cart")
-    ShoppingCartDto getCart(@RequestParam("username") String username);
+    ShoppingCartDto getCart(@RequestParam String username);
 
     @PutMapping("/api/v1/shopping-cart")
     ShoppingCartDto addProducts(@RequestParam String username,
@@ -23,10 +23,10 @@ public interface ShoppingCartClient {
     ShoppingCartDto deactivate(@RequestParam("username") String username);
 
     @PostMapping("/api/v1/shopping-cart/remove")
-    ShoppingCartDto removeProducts(@RequestParam("username") String username,
+    ShoppingCartDto removeProducts(@RequestParam String username,
                                    @RequestBody List<UUID> productIds);
 
     @PostMapping("/api/v1/shopping-cart/change-quantity")
-    ShoppingCartDto changeQuantity(@RequestParam("username") String username,
-                                   @RequestBody ChangeProductQuantityRequest requestDto);
+    ShoppingCartDto changeQuantity(@RequestParam String username,
+                                   @RequestBody @Valid ChangeProductQuantityRequest requestDto);
 }

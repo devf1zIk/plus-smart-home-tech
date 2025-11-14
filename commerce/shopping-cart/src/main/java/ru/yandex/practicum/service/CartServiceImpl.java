@@ -41,7 +41,7 @@ public class CartServiceImpl implements CartService {
     public ShoppingCartDto addProducts(String username, Map<UUID, Long> products) {
         Cart cart = getOrCreateCart(username);
 
-        if (cart.getStatus() == CartState.DEACTIVATE) {
+        if (cart.getStatus() == CartState.DEACTIVATED) {
             throw new CartDeactivatedException();
         }
 
@@ -71,7 +71,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public ShoppingCartDto deactivate(String username) {
         Cart cart = getOrCreateCart(username);
-        cart.setStatus(CartState.DEACTIVATE);
+        cart.setStatus(CartState.DEACTIVATED);
         cartRepository.save(cart);
         return cartMapper.toCartItemRequestDto(cart);
     }

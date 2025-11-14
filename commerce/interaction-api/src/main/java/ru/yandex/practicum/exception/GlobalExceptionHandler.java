@@ -22,36 +22,70 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ProductAlreadyExistsException.class)
     public Map<String, Object> handleProductAlreadyExists(ProductAlreadyExistsException ex) {
-        return buildErrorResponse(HttpStatus.CONFLICT, "Product Already Exists", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.CONFLICT,
+                "Товар уже существует",
+                ex.getMessage()
+        );
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ProductNotFoundException.class)
     public Map<String, Object> handleProductNotFound(ProductNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Product Not Found", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "Товар не найден",
+                ex.getMessage()
+        );
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InsufficientStockException.class)
     public Map<String, Object> handleInsufficientStock(InsufficientStockException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Insufficient Stock", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Недостаточно товара на складе",
+                ex.getMessage()
+        );
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(CartDeactivatedException.class)
     public Map<String, Object> handleCartDeactivated(CartDeactivatedException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Cart Deactivated", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Корзина деактивирована",
+                ex.getMessage()
+        );
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(CartNotFoundException.class)
     public Map<String, Object> handleCartNotFound(CartNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, "Cart Not Found", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "Корзина не найдена",
+                ex.getMessage()
+        );
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ProductOperationException.class)
     public Map<String, Object> handleProductOperationException(ProductOperationException ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Product Operation Error", ex.getMessage());
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ошибка при обработке товара",
+                ex.getMessage()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Throwable.class)
+    public Map<String, Object> handleUnexpectedExceptions(Throwable ex) {
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Внутренняя ошибка сервера",
+                ex.getMessage() != null ? ex.getMessage() : "Произошла непредвиденная ошибка"
+        );
     }
 }
