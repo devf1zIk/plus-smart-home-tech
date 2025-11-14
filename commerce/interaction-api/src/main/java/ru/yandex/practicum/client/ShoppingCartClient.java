@@ -20,7 +20,7 @@ public interface ShoppingCartClient {
                                 @RequestBody Map<UUID, Long> products);
 
     @DeleteMapping("/api/v1/shopping-cart")
-    ShoppingCartDto deactivate(@RequestParam("username") String username);
+    ShoppingCartDto deactivate(@RequestParam String username);
 
     @PostMapping("/api/v1/shopping-cart/remove")
     ShoppingCartDto removeProducts(@RequestParam String username,
