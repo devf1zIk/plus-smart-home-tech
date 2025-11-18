@@ -3,12 +3,15 @@ package ru.yandex.practicum.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.exception.ProductNotFoundException;
-import ru.yandex.practicum.exception.ProductOperationException;
+import ru.yandex.practicum.dto.cart.ShoppingCartDto;
+import ru.yandex.practicum.dto.warehouse.*;
+import ru.yandex.practicum.exception.*;
+import ru.yandex.practicum.model.OrderBooking;
 import ru.yandex.practicum.model.WarehouseItem;
+import ru.yandex.practicum.repository.OrderBookingRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
 import java.security.SecureRandom;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -18,6 +21,7 @@ import java.util.UUID;
 public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
+    private final OrderBookingRepository orderBookingRepository;
 
     private static final String[] ADDRESSES =
             new String[] {"ADDRESS_1", "ADDRESS_2"};
@@ -117,4 +121,83 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .flat(CURRENT_ADDRESS)
                 .build();
     }
+
+    @Override
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest request) {
+        Map<UUID, Long> products = request.getProducts();
+        if (products == null || products.isEmpty()) {
+            throw new NoProductsInShoppingCartException("Корзина пуста");
+        }
+
+        double totalWeight = 0.0;
+        double totalVolume = 0.0;
+        boolean fragile = false;
+
+        for (var entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long quantity = entry.getValue();
+
+            WarehouseItem item = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден на складе: " + productId));
+
+            if (item.getQuantity() < quantity) {
+                throw new ProductInShoppingCartLowQuantityInWarehouseException("Недостаточно товара на складе: " + productId);
+            }
+
+            item.setQuantity(item.getQuantity() - quantity);
+            warehouseRepository.save(item);
+
+            totalWeight += item.getWeight() * quantity;
+            totalVolume += item.getWidth() * item.getHeight() * item.getDepth() * quantity;
+            fragile = fragile || Boolean.TRUE.equals(item.getFragile());
+        }
+
+        OrderBooking booking = OrderBooking.builder()
+                .bookingId(UUID.randomUUID())
+                .orderId(request.getOrderId())
+                .totalWeight(totalWeight)
+                .totalVolume(totalVolume)
+                .fragile(fragile)
+                .products(products)
+                .build();
+
+        orderBookingRepository.save(booking);
+
+        return BookedProductsDto.builder()
+                .deliveryWeight(totalWeight)
+                .deliveryVolume(totalVolume)
+                .fragile(fragile)
+                .build();
+    }
+
+    @Transactional
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+
+        OrderBooking booking = orderBookingRepository.findByOrderId(request.getOrderId())
+                .orElseThrow();
+
+        booking.setDeliveryId(request.getDeliveryId());
+
+        orderBookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void returnProduct(Map<UUID, Integer> products) {
+
+        if (products == null || products.isEmpty()) {
+            throw new NoProductsInShoppingCartException("Список товаров для возврата пуст");
+        }
+
+        for (var entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            long quantity = entry.getValue();
+
+            WarehouseItem warehouseItem = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден на складе: " + productId));
+
+            warehouseItem.setQuantity(warehouseItem.getQuantity() + quantity);
+            warehouseRepository.save(warehouseItem);
+        }
+    }
+
 }

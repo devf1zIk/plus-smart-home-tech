@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.client.ShoppingStoreClient;
-import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.product.ProductDto;
 import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.QuantityState;
 import ru.yandex.practicum.service.ProductService;
