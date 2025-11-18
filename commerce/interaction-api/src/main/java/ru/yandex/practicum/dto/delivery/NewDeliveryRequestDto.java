@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.dto.warehouse.AddressDto;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -21,7 +22,7 @@ public class NewDeliveryRequestDto {
     AddressDto toAddress;
     AddressDto fromAddress;
 
-    Double totalWeight;
-    Double totalVolume;
+    BigDecimal totalWeight;
+    BigDecimal totalVolume;
     Boolean fragile;
 }

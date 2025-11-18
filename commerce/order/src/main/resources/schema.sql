@@ -8,13 +8,13 @@ CREATE TABLE orders (
 
     state VARCHAR(50) NOT NULL,
 
-    delivery_weight DOUBLE PRECISION,
-    delivery_volume DOUBLE PRECISION,
+    delivery_weight NUMERIC(10,2),
+    delivery_volume NUMERIC(10,2),
     fragile BOOLEAN,
 
-    total_price DOUBLE PRECISION,
-    delivery_price DOUBLE PRECISION,
-    product_price DOUBLE PRECISION
+    total_price NUMERIC(10,2),
+    delivery_price NUMERIC(10,2),
+    product_price NUMERIC(10,2)
 );
 
 CREATE TABLE order_products (

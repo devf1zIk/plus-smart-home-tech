@@ -14,6 +14,7 @@ import ru.yandex.practicum.exception.PaymentNotFoundException;
 import ru.yandex.practicum.mapper.PaymentMapper;
 import ru.yandex.practicum.model.Payment;
 import ru.yandex.practicum.repository.PaymentRepository;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -30,10 +31,10 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentDto createPayment(OrderDto orderDto) {
         validateOrder(orderDto);
 
-        Double productCost = calculateProductCost(orderDto);
-        Double tax = productCost * 0.1;
-        Double delivery = orderDto.getDeliveryPrice();
-        Double total = productCost + tax + delivery;
+        BigDecimal productCost = calculateProductCost(orderDto);
+        BigDecimal tax = productCost.multiply(BigDecimal.valueOf(0.1));
+        BigDecimal delivery = orderDto.getDeliveryPrice();
+        BigDecimal total = productCost.add(tax).add(delivery);
 
         Payment payment = Payment.builder()
                 .paymentId(UUID.randomUUID())
@@ -41,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .productTotal(productCost)
                 .deliveryTotal(delivery)
                 .feeTotal(tax)
-                .TotalPayment(total)
+                .totalPayment(total)
                 .state(PaymentState.PENDING)
                 .build();
 
@@ -52,21 +53,28 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toDto(saved);
     }
 
-    public Double calculateProductCost(OrderDto orderDto) {
+
+    public BigDecimal calculateProductCost(OrderDto orderDto) {
         validateOrder(orderDto);
+
         return orderDto.getProducts().entrySet().stream()
-                .mapToDouble(entry -> shoppingStoreClient.getProductById(entry.getKey())
-                        .getPrice().doubleValue() * entry.getValue())
-                .sum();
+                .map(entry -> {
+                    BigDecimal price = shoppingStoreClient.getProductById(entry.getKey())
+                            .getPrice();
+                    Long quantity = entry.getValue();
+                    return price.multiply(BigDecimal.valueOf(quantity));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-
-    public Double calculateTotalCost(OrderDto orderDto) {
+    public BigDecimal calculateTotalCost(OrderDto orderDto) {
         validateOrder(orderDto);
-        Double productCost = calculateProductCost(orderDto);
-        Double tax = productCost * 0.1;
-        Double delivery = orderDto.getDeliveryPrice();
-        return productCost + tax + delivery;
+
+        BigDecimal productCost = calculateProductCost(orderDto);
+        BigDecimal tax = productCost.multiply(BigDecimal.valueOf(0.1));
+        BigDecimal delivery = orderDto.getDeliveryPrice();
+
+        return productCost.add(tax).add(delivery);
     }
 
     @Override

@@ -2,6 +2,7 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class OrderBooking {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Column(name = "delivery_id", nullable = false)
+    @Column(name = "delivery_id")
     private UUID deliveryId;
 
     @ElementCollection
@@ -31,15 +32,15 @@ public class OrderBooking {
     @Column(name = "quantity")
     private Map<UUID, Long> products;
 
-    private String State;
+    @Column(name = "state")
+    private String state;
 
-    @Column(name = "total_weight", nullable = false)
-    Double totalWeight;
+    @Column(name = "total_weight", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalWeight;
 
-    @Column(name = "total_volume", nullable = false)
-    Double totalVolume;
+    @Column(name = "total_volume", nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalVolume;
 
     @Column(name = "fragile", nullable = false)
-    Boolean fragile;
-
+    private Boolean fragile;
 }

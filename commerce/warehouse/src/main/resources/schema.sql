@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS warehouse_items (
 CREATE TABLE IF NOT EXISTS order_bookings (
     booking_id UUID PRIMARY KEY,
     order_id UUID NOT NULL,
-    delivery_id UUID NOT NULL,
+    delivery_id UUID,
     state VARCHAR(255),
     total_weight NUMERIC(10, 2) NOT NULL,
     total_volume NUMERIC(10, 2) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS order_bookings (
 CREATE TABLE IF NOT EXISTS order_booking_products (
     order_booking_id UUID NOT NULL,
     product_id UUID NOT NULL,
-    quantity BIGINT NOT NULL,
+    quantity BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (order_booking_id, product_id),
     FOREIGN KEY (order_booking_id) REFERENCES order_bookings(booking_id) ON DELETE CASCADE
 );

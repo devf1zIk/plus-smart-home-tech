@@ -3,6 +3,7 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.enums.OrderState;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -46,20 +47,20 @@ public class Order {
     private OrderState state;
 
     @Column(name = "delivery_weight")
-    private Double deliveryWeight;
+    private BigDecimal deliveryWeight;
 
     @Column(name = "delivery_volume")
-    private Double deliveryVolume;
+    private BigDecimal deliveryVolume;
 
     @Column(name = "fragile")
     private Boolean fragile;
 
     @Column(name = "total_price")
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     @Column(name = "delivery_price")
-    private Double deliveryPrice;
+    private BigDecimal deliveryPrice;
 
     @Column(name = "product_price")
-    private Double productPrice;
+    private BigDecimal productPrice;
 }

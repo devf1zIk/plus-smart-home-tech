@@ -9,7 +9,6 @@ import ru.yandex.practicum.client.PaymentClient;
 import ru.yandex.practicum.dto.order.OrderDto;
 import ru.yandex.practicum.dto.payment.PaymentDto;
 import ru.yandex.practicum.service.PaymentService;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -28,7 +27,7 @@ public class PaymentController implements PaymentClient {
 
     @Override
     @PostMapping("/totalCost")
-    public Double totalCost(OrderDto orderDto) {
+    public BigDecimal totalCost(OrderDto orderDto) {
         return paymentService.calculateTotalCost(orderDto);
     }
 
@@ -40,7 +39,7 @@ public class PaymentController implements PaymentClient {
 
     @PostMapping("/productCost")
     @Override
-    public Double productCost(@RequestBody OrderDto orderDto) {
+    public BigDecimal productCost(@RequestBody OrderDto orderDto) {
         return paymentService.calculateProductCost(orderDto);
     }
 

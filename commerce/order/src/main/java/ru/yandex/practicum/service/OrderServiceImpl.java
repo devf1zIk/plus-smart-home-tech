@@ -18,6 +18,7 @@ import ru.yandex.practicum.enums.OrderState;
 import ru.yandex.practicum.exception.NoOrderFoundException;
 import ru.yandex.practicum.model.Order;
 import ru.yandex.practicum.repository.OrderRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,9 +49,9 @@ public class OrderServiceImpl implements OrderService {
                 .products(request.getShoppingCart().getProducts())
                 .state(OrderState.NEW)
                 .fragile(false)
-                .totalPrice(0.0)
-                .deliveryPrice(0.0)
-                .productPrice(0.0)
+                .totalPrice(BigDecimal.ZERO)
+                .deliveryPrice(BigDecimal.ZERO)
+                .productPrice(BigDecimal.ZERO)
                 .build();
         orderRepository.save(order);
 
@@ -87,13 +88,13 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto calculateTotal(UUID orderId) {
         Order order = getOrThrow(orderId);
 
-        Double productCost = paymentClient.productCost(orderMapper.toDto(order));
+        BigDecimal productCost = paymentClient.productCost(orderMapper.toDto(order));
         order.setProductPrice(productCost);
 
-        Double deliveryCost = deliveryClient.cost(orderMapper.toDto(order));
+        BigDecimal deliveryCost = deliveryClient.cost(orderMapper.toDto(order));
         order.setDeliveryPrice(deliveryCost);
 
-        Double totalCost = paymentClient.totalCost(orderMapper.toDto(order));
+        BigDecimal totalCost = paymentClient.totalCost(orderMapper.toDto(order));
         order.setTotalPrice(totalCost);
 
         order.setState(OrderState.ON_PAYMENT);
@@ -103,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
 
     public OrderDto calculateDelivery(UUID orderId) {
         Order order = getOrThrow(orderId);
-        Double deliveryCost = deliveryClient.cost(orderMapper.toDto(order));
+        BigDecimal deliveryCost = deliveryClient.cost(orderMapper.toDto(order));
         order.setDeliveryPrice(deliveryCost);
         return orderMapper.toDto(orderRepository.save(order));
     }

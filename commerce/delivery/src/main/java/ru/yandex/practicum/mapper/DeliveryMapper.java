@@ -2,13 +2,28 @@ package ru.yandex.practicum.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
+import ru.yandex.practicum.dto.delivery.NewDeliveryRequestDto;
 import ru.yandex.practicum.dto.warehouse.AddressDto;
+import ru.yandex.practicum.enums.DeliveryState;
 import ru.yandex.practicum.model.Address;
 import ru.yandex.practicum.model.Delivery;
 import java.util.UUID;
 
 @Component
 public class DeliveryMapper {
+
+    public Delivery toModel(NewDeliveryRequestDto request) {
+        return Delivery.builder()
+                .deliveryId(UUID.randomUUID())
+                .orderId(request.getOrderId())
+                .totalWeight(request.getTotalWeight())
+                .totalVolume(request.getTotalVolume())
+                .fragile(request.getFragile())
+                .deliveryState(DeliveryState.CREATED)
+                .fromAddress(toAddress(request.getFromAddress()))
+                .toAddress(toAddress(request.getToAddress()))
+                .build();
+    }
 
     public DeliveryDto toDto(Delivery delivery) {
         return DeliveryDto.builder()

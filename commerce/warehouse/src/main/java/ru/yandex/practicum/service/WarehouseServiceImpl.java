@@ -10,6 +10,7 @@ import ru.yandex.practicum.model.OrderBooking;
 import ru.yandex.practicum.model.WarehouseItem;
 import ru.yandex.practicum.repository.OrderBookingRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Random;
@@ -55,35 +56,45 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new ProductNotFoundException("Корзина покупателя не может быть пустой");
         }
 
-        double totalWeight = 0.0;
-        double totalVolume = 0.0;
-        boolean hasFragile = false;
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        BigDecimal totalVolume = BigDecimal.ZERO;
+        boolean fragile = false;
 
-        for (var entry : shoppingCartDto.getProducts().entrySet()) {
+        for (Map.Entry<UUID, Long> entry : shoppingCartDto.getProducts().entrySet()) {
             UUID productId = entry.getKey();
             Long requestedQuantity = entry.getValue();
 
             if (requestedQuantity == null || requestedQuantity <= 0) {
                 throw new ProductOperationException("Количество товара должно быть положительным: " + productId);
             }
-            var warehouseItemOpt = warehouseRepository.findByProductId(productId);
-            if (warehouseItemOpt.isEmpty() || warehouseItemOpt.get().getQuantity() < requestedQuantity) {
+
+            WarehouseItem item = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Товар отсутствует на складе: " + productId));
+
+            if (item.getQuantity() < requestedQuantity) {
                 throw new ProductNotFoundException("Недостаточно товара на складе: " + productId);
             }
 
-            WarehouseItem warehouseItem = warehouseItemOpt.get();
-            if (warehouseItem.getWidth() == null || warehouseItem.getHeight() == null || warehouseItem.getDepth() == null) {
-                throw new ProductOperationException("Товар не имеет размеров: " + productId);
-            }
-            totalWeight += warehouseItem.getWeight() * requestedQuantity;
-            totalVolume += warehouseItem.getWidth() * warehouseItem.getHeight() * warehouseItem.getDepth() * requestedQuantity;
-            hasFragile = hasFragile || Boolean.TRUE.equals(warehouseItem.getFragile());
+            BigDecimal qty = BigDecimal.valueOf(requestedQuantity);
+
+            BigDecimal weight = item.getWeight() != null ? item.getWeight() : BigDecimal.ZERO;
+            totalWeight = totalWeight.add(weight.multiply(qty));
+
+            BigDecimal width  = item.getWidth()  != null ? item.getWidth()  : BigDecimal.ZERO;
+            BigDecimal height = item.getHeight() != null ? item.getHeight() : BigDecimal.ZERO;
+            BigDecimal depth  = item.getDepth()  != null ? item.getDepth()  : BigDecimal.ZERO;
+
+            BigDecimal itemVolume = width.multiply(height).multiply(depth);
+            itemVolume = itemVolume.multiply(qty);
+            totalVolume = totalVolume.add(itemVolume);
+
+            fragile = fragile || Boolean.TRUE.equals(item.getFragile());
         }
 
         return BookedProductsDto.builder()
                 .deliveryWeight(totalWeight)
                 .deliveryVolume(totalVolume)
-                .fragile(hasFragile)
+                .fragile(fragile)
                 .build();
     }
 
@@ -129,8 +140,8 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new NoProductsInShoppingCartException("Корзина пуста");
         }
 
-        double totalWeight = 0.0;
-        double totalVolume = 0.0;
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        BigDecimal totalVolume = BigDecimal.ZERO;
         boolean fragile = false;
 
         for (var entry : products.entrySet()) {
@@ -138,17 +149,29 @@ public class WarehouseServiceImpl implements WarehouseService {
             Long quantity = entry.getValue();
 
             WarehouseItem item = warehouseRepository.findByProductId(productId)
-                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден на складе: " + productId));
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден: " + productId));
 
             if (item.getQuantity() < quantity) {
-                throw new ProductInShoppingCartLowQuantityInWarehouseException("Недостаточно товара на складе: " + productId);
+                throw new ProductInShoppingCartLowQuantityInWarehouseException(
+                        "Недостаточно товара: " + productId
+                );
             }
 
             item.setQuantity(item.getQuantity() - quantity);
             warehouseRepository.save(item);
 
-            totalWeight += item.getWeight() * quantity;
-            totalVolume += item.getWidth() * item.getHeight() * item.getDepth() * quantity;
+            BigDecimal qty = BigDecimal.valueOf(quantity);
+
+            BigDecimal weight = item.getWeight() != null ? item.getWeight() : BigDecimal.ZERO;
+            totalWeight = totalWeight.add(weight.multiply(qty));
+
+            BigDecimal width  = item.getWidth()  != null ? item.getWidth()  : BigDecimal.ZERO;
+            BigDecimal height = item.getHeight() != null ? item.getHeight() : BigDecimal.ZERO;
+            BigDecimal depth  = item.getDepth()  != null ? item.getDepth()  : BigDecimal.ZERO;
+
+            BigDecimal itemVolume = width.multiply(height).multiply(depth).multiply(qty);
+            totalVolume = totalVolume.add(itemVolume);
+
             fragile = fragile || Boolean.TRUE.equals(item.getFragile());
         }
 

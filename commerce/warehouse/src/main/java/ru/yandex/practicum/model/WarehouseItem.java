@@ -2,6 +2,7 @@ package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Getter
@@ -24,17 +25,17 @@ public class WarehouseItem {
     private Boolean fragile;
 
     @Column(nullable = false)
-    private Double weight;
+    private BigDecimal weight;
 
     @Column(nullable = false)
     private Long quantity = 0L;
 
     @Column(nullable = false)
-    private Double width;
+    private BigDecimal width;
 
     @Column(nullable = false)
-    private Double height;
+    private BigDecimal height;
 
     @Column(nullable = false)
-    private Double depth;
+    private BigDecimal depth;
 }

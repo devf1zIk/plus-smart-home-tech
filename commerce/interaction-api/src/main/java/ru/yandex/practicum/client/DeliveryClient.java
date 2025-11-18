@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryRequestDto;
 import ru.yandex.practicum.dto.order.OrderDto;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @FeignClient(name = "delivery")
@@ -16,7 +17,7 @@ public interface DeliveryClient {
     DeliveryDto create(@RequestBody NewDeliveryRequestDto dto);
 
     @PostMapping("/api/v1/delivery/cost")
-    Double cost(@RequestBody OrderDto dto);
+    BigDecimal cost(@RequestBody OrderDto dto);
 
     @PostMapping("/api/v1/delivery/picked")
     DeliveryDto picked(@RequestBody UUID orderId);

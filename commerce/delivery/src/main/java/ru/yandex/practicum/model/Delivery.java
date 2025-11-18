@@ -3,6 +3,8 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import ru.yandex.practicum.enums.DeliveryState;
+
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -33,10 +35,10 @@ public class Delivery {
     private Address toAddress;
 
     @Column(nullable = false)
-    private Double totalWeight;
+    private BigDecimal totalWeight;
 
     @Column(nullable = false)
-    private Double totalVolume;
+    private BigDecimal totalVolume;
 
     @Column(nullable = false)
     private Boolean fragile;

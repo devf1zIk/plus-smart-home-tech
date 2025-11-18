@@ -7,6 +7,7 @@ import ru.yandex.practicum.dto.delivery.DeliveryDto;
 import ru.yandex.practicum.dto.delivery.NewDeliveryRequestDto;
 import ru.yandex.practicum.dto.order.OrderDto;
 import ru.yandex.practicum.service.DeliveryService;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -24,7 +25,7 @@ public class DeliveryController implements DeliveryClient {
 
     @Override
     @PostMapping("/cost")
-    public Double cost(@RequestBody OrderDto orderDto) {
+    public BigDecimal cost(@RequestBody OrderDto orderDto) {
         return deliveryService.calculateDeliveryCost(orderDto);
     }
 
