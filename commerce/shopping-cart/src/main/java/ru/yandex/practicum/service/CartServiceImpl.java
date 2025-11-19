@@ -2,8 +2,8 @@ package ru.yandex.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.enums.CartState;
 import ru.yandex.practicum.exception.CartDeactivatedException;
 import ru.yandex.practicum.exception.CartNotFoundException;

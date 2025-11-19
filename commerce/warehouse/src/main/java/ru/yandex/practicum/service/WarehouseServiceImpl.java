@@ -3,12 +3,16 @@ package ru.yandex.practicum.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.exception.ProductNotFoundException;
-import ru.yandex.practicum.exception.ProductOperationException;
+import ru.yandex.practicum.dto.cart.ShoppingCartDto;
+import ru.yandex.practicum.dto.warehouse.*;
+import ru.yandex.practicum.exception.*;
+import ru.yandex.practicum.model.OrderBooking;
 import ru.yandex.practicum.model.WarehouseItem;
+import ru.yandex.practicum.repository.OrderBookingRepository;
 import ru.yandex.practicum.repository.WarehouseRepository;
+import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -18,6 +22,7 @@ import java.util.UUID;
 public class WarehouseServiceImpl implements WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
+    private final OrderBookingRepository orderBookingRepository;
 
     private static final String[] ADDRESSES =
             new String[] {"ADDRESS_1", "ADDRESS_2"};
@@ -51,35 +56,45 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new ProductNotFoundException("Корзина покупателя не может быть пустой");
         }
 
-        double totalWeight = 0.0;
-        double totalVolume = 0.0;
-        boolean hasFragile = false;
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        BigDecimal totalVolume = BigDecimal.ZERO;
+        boolean fragile = false;
 
-        for (var entry : shoppingCartDto.getProducts().entrySet()) {
+        for (Map.Entry<UUID, Long> entry : shoppingCartDto.getProducts().entrySet()) {
             UUID productId = entry.getKey();
             Long requestedQuantity = entry.getValue();
 
             if (requestedQuantity == null || requestedQuantity <= 0) {
                 throw new ProductOperationException("Количество товара должно быть положительным: " + productId);
             }
-            var warehouseItemOpt = warehouseRepository.findByProductId(productId);
-            if (warehouseItemOpt.isEmpty() || warehouseItemOpt.get().getQuantity() < requestedQuantity) {
+
+            WarehouseItem item = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Товар отсутствует на складе: " + productId));
+
+            if (item.getQuantity() < requestedQuantity) {
                 throw new ProductNotFoundException("Недостаточно товара на складе: " + productId);
             }
 
-            WarehouseItem warehouseItem = warehouseItemOpt.get();
-            if (warehouseItem.getWidth() == null || warehouseItem.getHeight() == null || warehouseItem.getDepth() == null) {
-                throw new ProductOperationException("Товар не имеет размеров: " + productId);
-            }
-            totalWeight += warehouseItem.getWeight() * requestedQuantity;
-            totalVolume += warehouseItem.getWidth() * warehouseItem.getHeight() * warehouseItem.getDepth() * requestedQuantity;
-            hasFragile = hasFragile || Boolean.TRUE.equals(warehouseItem.getFragile());
+            BigDecimal qty = BigDecimal.valueOf(requestedQuantity);
+
+            BigDecimal weight = item.getWeight() != null ? item.getWeight() : BigDecimal.ZERO;
+            totalWeight = totalWeight.add(weight.multiply(qty));
+
+            BigDecimal width  = item.getWidth()  != null ? item.getWidth()  : BigDecimal.ZERO;
+            BigDecimal height = item.getHeight() != null ? item.getHeight() : BigDecimal.ZERO;
+            BigDecimal depth  = item.getDepth()  != null ? item.getDepth()  : BigDecimal.ZERO;
+
+            BigDecimal itemVolume = width.multiply(height).multiply(depth);
+            itemVolume = itemVolume.multiply(qty);
+            totalVolume = totalVolume.add(itemVolume);
+
+            fragile = fragile || Boolean.TRUE.equals(item.getFragile());
         }
 
         return BookedProductsDto.builder()
                 .deliveryWeight(totalWeight)
                 .deliveryVolume(totalVolume)
-                .fragile(hasFragile)
+                .fragile(fragile)
                 .build();
     }
 
@@ -117,4 +132,95 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .flat(CURRENT_ADDRESS)
                 .build();
     }
+
+    @Override
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest request) {
+        Map<UUID, Long> products = request.getProducts();
+        if (products == null || products.isEmpty()) {
+            throw new NoProductsInShoppingCartException("Корзина пуста");
+        }
+
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        BigDecimal totalVolume = BigDecimal.ZERO;
+        boolean fragile = false;
+
+        for (var entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            Long quantity = entry.getValue();
+
+            WarehouseItem item = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден: " + productId));
+
+            if (item.getQuantity() < quantity) {
+                throw new ProductInShoppingCartLowQuantityInWarehouseException(
+                        "Недостаточно товара: " + productId
+                );
+            }
+
+            item.setQuantity(item.getQuantity() - quantity);
+            warehouseRepository.save(item);
+
+            BigDecimal qty = BigDecimal.valueOf(quantity);
+
+            BigDecimal weight = item.getWeight() != null ? item.getWeight() : BigDecimal.ZERO;
+            totalWeight = totalWeight.add(weight.multiply(qty));
+
+            BigDecimal width  = item.getWidth()  != null ? item.getWidth()  : BigDecimal.ZERO;
+            BigDecimal height = item.getHeight() != null ? item.getHeight() : BigDecimal.ZERO;
+            BigDecimal depth  = item.getDepth()  != null ? item.getDepth()  : BigDecimal.ZERO;
+
+            BigDecimal itemVolume = width.multiply(height).multiply(depth).multiply(qty);
+            totalVolume = totalVolume.add(itemVolume);
+
+            fragile = fragile || Boolean.TRUE.equals(item.getFragile());
+        }
+
+        OrderBooking booking = OrderBooking.builder()
+                .bookingId(UUID.randomUUID())
+                .orderId(request.getOrderId())
+                .totalWeight(totalWeight)
+                .totalVolume(totalVolume)
+                .fragile(fragile)
+                .products(products)
+                .build();
+
+        orderBookingRepository.save(booking);
+
+        return BookedProductsDto.builder()
+                .deliveryWeight(totalWeight)
+                .deliveryVolume(totalVolume)
+                .fragile(fragile)
+                .build();
+    }
+
+    @Transactional
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+
+        OrderBooking booking = orderBookingRepository.findByOrderId(request.getOrderId())
+                .orElseThrow();
+
+        booking.setDeliveryId(request.getDeliveryId());
+
+        orderBookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void returnProduct(Map<UUID, Integer> products) {
+
+        if (products == null || products.isEmpty()) {
+            throw new NoProductsInShoppingCartException("Список товаров для возврата пуст");
+        }
+
+        for (var entry : products.entrySet()) {
+            UUID productId = entry.getKey();
+            long quantity = entry.getValue();
+
+            WarehouseItem warehouseItem = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар не найден на складе: " + productId));
+
+            warehouseItem.setQuantity(warehouseItem.getQuantity() + quantity);
+            warehouseRepository.save(warehouseItem);
+        }
+    }
+
 }
